@@ -1,0 +1,7 @@
+{
+  "name": "platform-dev",
+  "engineVersion": "v0.19.11",
+  "sdk": {
+    "source": "typescript"
+  }
+}

@@ -1,0 +1,21 @@
+import { readFileSync, existsSync } from 'fs';
+import * as yaml from 'js-yaml';
+
+export interface AppConfig {
+  name: string;
+  framework?: string;
+  database?: { enabled: boolean };
+  storage?: { enabled: boolean; buckets?: Array<{ name: string; public: boolean }> };
+  auth?: { enabled: boolean };
+  local?: { port?: number; env?: Record<string, string> };
+}
+
+export function loadConfig(): AppConfig {
+  const configPath = 'plattr.yaml';
+  if (!existsSync(configPath)) {
+    console.error('No plattr.yaml found in current directory.');
+    console.error('Run "plattr init" to create one.');
+    process.exit(1);
+  }
+  return yaml.load(readFileSync(configPath, 'utf-8')) as AppConfig;
+}

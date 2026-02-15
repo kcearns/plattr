@@ -1,0 +1,33 @@
+apiVersion: platform.internal/v1alpha1
+kind: Application
+metadata:
+  name: my-frontend
+  namespace: default
+spec:
+  repository: github.com/myorg/my-frontend
+  branch: main
+  framework: nextjs
+  environment: production
+  database:
+    enabled: true
+    schemaName: my_frontend
+    migrations:
+      path: ./prisma/migrations
+      engine: prisma
+  storage:
+    enabled: true
+    buckets:
+      - name: uploads
+        public: false
+      - name: assets
+        public: true
+  auth:
+    enabled: true
+    providers:
+      - google
+      - github
+  scaling:
+    min: 2
+    max: 20
+    targetCPU: 70
+  domain: my-frontend.platform.company.dev

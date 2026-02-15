@@ -1,0 +1,5 @@
+apiVersion: v2
+name: plattr-operator
+description: Plattr Operator — manages Application and PreviewEnvironment CRDs
+version: 0.1.0
+appVersion: "0.1.0"

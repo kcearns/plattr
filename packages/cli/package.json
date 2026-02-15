@@ -1,0 +1,25 @@
+{
+  "name": "@plattr/cli",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "plattr": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@plattr/shared": "*",
+    "commander": "^13.0.0",
+    "js-yaml": "^4.1.0",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.2.3",
+    "@types/prompts": "^2.4.9"
+  }
+}

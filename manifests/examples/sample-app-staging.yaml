@@ -1,0 +1,18 @@
+apiVersion: platform.internal/v1alpha1
+kind: Application
+metadata:
+  name: my-frontend
+  namespace: staging
+spec:
+  repository: github.com/myorg/my-frontend
+  branch: main
+  framework: nextjs
+  environment: staging
+  database:
+    enabled: true
+    schemaName: my_frontend
+  storage:
+    enabled: true
+    buckets:
+      - name: uploads
+        public: false

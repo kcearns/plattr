@@ -1,0 +1,36 @@
+replicaCount: 2
+
+image:
+  repository: plattr-operator
+  tag: latest
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # When deployed via CDK, the SA is created by CDK with IRSA annotation
+  # Set create: false and provide the name CDK creates
+  create: true
+  name: plattr-operator
+  annotations: {}
+
+config:
+  # These are overridden by CDK at deploy time
+  dbAdminUrl: ""           # or read from Secrets Manager at runtime
+  dbSecretArn: ""          # Secrets Manager ARN for DB admin credentials
+  dbHost: ""               # Aurora cluster endpoint
+  dbName: "plattr"
+  awsRegion: "ca-central-1"
+  baseDomain: "platform.company.dev"
+  leaderElection: "true"
+  keycloakAdminUrl: "http://keycloak-http.plattr-system:80"
+  keycloakAdminUser: "admin"
+  keycloakAdminPassword: ""  # From a K8s Secret, not in values
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+metricsPort: 9090

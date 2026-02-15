@@ -1,0 +1,20 @@
+name: example-nextjs
+framework: nextjs
+
+database:
+  enabled: true
+
+storage:
+  enabled: true
+  buckets:
+    - name: uploads
+      public: false
+
+auth:
+  enabled: true
+  providers:
+    - google
+    - github
+
+local:
+  port: 3000

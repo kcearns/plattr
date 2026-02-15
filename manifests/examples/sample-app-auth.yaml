@@ -1,0 +1,18 @@
+apiVersion: platform.internal/v1alpha1
+kind: Application
+metadata:
+  name: my-dashboard
+  namespace: default
+spec:
+  repository: github.com/myorg/my-dashboard
+  framework: nextjs
+  environment: production
+  database:
+    enabled: true
+  storage:
+    enabled: false
+  auth:
+    enabled: true
+    providers:
+      - google
+      - github

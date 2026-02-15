@@ -1,0 +1,10 @@
+apiVersion: platform.internal/v1alpha1
+kind: PreviewEnvironment
+metadata:
+  name: my-frontend-pr-42
+  namespace: default
+spec:
+  applicationRef: my-frontend
+  pullRequest: 42
+  branch: feature/new-login
+  ttl: 72h
