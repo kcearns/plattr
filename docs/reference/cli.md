@@ -18,6 +18,8 @@ Interactive prompts:
 3. Enable database?
 4. Enable storage?
 5. Enable authentication?
+6. Enable Redis cache?
+7. Enable OpenSearch?
 
 **Creates:**
 - `plattr.yaml` — app configuration
@@ -41,7 +43,7 @@ plattr dev [options]
 
 1. Creates a local Kind cluster (if not already running)
 2. Starts a local container registry on port 5050
-3. Applies Kubernetes manifests for enabled services (PostgreSQL, PostgREST, MinIO, Keycloak)
+3. Applies Kubernetes manifests for enabled services (PostgreSQL, PostgREST, MinIO, Keycloak, Redis, OpenSearch)
 4. Waits for all services to be ready
 5. Sets up database schema and roles
 6. Creates storage buckets
@@ -66,6 +68,9 @@ bin/rails server      # Rails
 | PostgREST | 3001 | `database.enabled: true` |
 | MinIO | 9000, 9001 | `storage.enabled: true` |
 | Keycloak | 8080 | `auth.enabled: true` |
+| Redis | 6379 | `redis.enabled: true` |
+| OpenSearch | 9200 | `search.enabled: true` |
+| OpenSearch Dashboards | 5601 | `search.enabled: true` |
 
 **State files** (in `.plattr/` directory):
 - `{appName}.env` — environment variables (sourceable)
@@ -344,6 +349,30 @@ plattr db reset
 ```
 
 Deletes the persistent volume claim and restarts the PostgreSQL deployment. Run `plattr dev` to recreate schemas.
+
+---
+
+### `plattr redis reset`
+
+Reset local Redis (deletes all data).
+
+```bash
+plattr redis reset
+```
+
+Deletes the persistent volume claim and restarts the Redis deployment.
+
+---
+
+### `plattr search reset`
+
+Reset local OpenSearch (deletes all data).
+
+```bash
+plattr search reset
+```
+
+Deletes the persistent volume claim and restarts the OpenSearch deployment.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an internal developer platform (IDP) called Plattr that provides a Vercel-like experience on Kubernetes. Developers define their app in a `plattr.yaml` and get databases, storage, auth, auto-generated REST APIs, preview environments, and production deployment.
+This is an internal developer platform (IDP) called Plattr that provides a Vercel-like experience on Kubernetes. Developers define their app in a `plattr.yaml` and get databases, storage, auth, Redis, OpenSearch, auto-generated REST APIs, preview environments, and production deployment.
 
 All 13 stages of development are complete.
 
@@ -43,7 +43,7 @@ manifests/
 ## Local Development (CLI)
 
 ```bash
-# Start local infrastructure (Kind cluster, DB, storage, auth)
+# Start local infrastructure (Kind cluster, DB, storage, auth, Redis, OpenSearch)
 plattr dev
 
 # Source env vars and start your dev server

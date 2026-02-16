@@ -24,6 +24,8 @@ The interactive wizard asks:
 3. **Database** — enable PostgreSQL?
 4. **Storage** — enable S3-compatible object storage?
 5. **Auth** — enable Keycloak authentication?
+6. **Redis** — enable Redis cache?
+7. **OpenSearch** — enable OpenSearch?
 
 This creates two files:
 - `plattr.yaml` — your app configuration
@@ -51,6 +53,12 @@ auth:
   providers:
     - google
     - github
+
+redis:
+  enabled: true
+
+search:
+  enabled: true
 
 local:
   port: 3000
@@ -88,6 +96,9 @@ npm run dev           # Generic
 | PostgREST | 3001 | `database.enabled: true` |
 | MinIO | 9000, 9001 | `storage.enabled: true` |
 | Keycloak | 8080 | `auth.enabled: true` |
+| Redis | 6379 | `redis.enabled: true` |
+| OpenSearch | 9200 | `search.enabled: true` |
+| OpenSearch Dashboards | 5601 | `search.enabled: true` |
 
 All services start only if enabled in `plattr.yaml`. A static site with no database won't start PostgreSQL.
 
@@ -151,6 +162,19 @@ Bucket env var names are derived from the bucket name: `uploads` becomes `S3_BUC
 | `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/my-app` | OIDC issuer URL |
 | `AUTH_CLIENT_ID` | `my-app-app` | OIDC client ID |
 
+### Redis (when `redis.enabled: true`)
+
+| Variable | Local Value | Description |
+|---|---|---|
+| `REDIS_URL` | `redis://127.0.0.1:6379` | Redis connection URL |
+
+### OpenSearch (when `search.enabled: true`)
+
+| Variable | Local Value | Description |
+|---|---|---|
+| `OPENSEARCH_URL` | `http://127.0.0.1:9200` | OpenSearch endpoint |
+| `OPENSEARCH_DASHBOARDS_URL` | `http://127.0.0.1:5601` | OpenSearch Dashboards UI |
+
 ### Production Equivalents
 
 | Variable | Local Value | Production Value |
@@ -160,6 +184,8 @@ Bucket env var names are derived from the bucket name: `uploads` becomes `S3_BUC
 | `POSTGREST_INTERNAL_URL` | *(not set)* | `http://localhost:3001` |
 | `S3_ENDPOINT` | `http://127.0.0.1:9000` | *(AWS S3 default)* |
 | `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/{app}` | `https://auth.{baseDomain}/realms/{app}` |
+| `REDIS_URL` | `redis://127.0.0.1:6379` | `redis://{managed-redis}:6379` |
+| `OPENSEARCH_URL` | `http://127.0.0.1:9200` | `https://{managed-opensearch}:443` |
 
 In production, `POSTGREST_INTERNAL_URL` connects directly to the PostgREST sidecar (same pod, no network hop). Use it for server-side calls. Use `POSTGREST_URL` for client-side/browser calls.
 
@@ -370,6 +396,69 @@ storage:
     - name: assets     # Public — accessible via direct URL
       public: true
 ```
+
+## Redis
+
+### Local Development
+
+When `redis.enabled: true`, a Redis 7 instance runs in the Kind cluster, accessible at `redis://127.0.0.1:6379`.
+
+```javascript
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+await redis.connect();
+
+await redis.set('key', 'value');
+const value = await redis.get('key');
+```
+
+### Reset Redis Data
+
+```bash
+plattr redis reset
+```
+
+Deletes the persistent volume and restarts Redis.
+
+## OpenSearch
+
+### Local Development
+
+When `search.enabled: true`, OpenSearch 2.18 runs in the Kind cluster with security disabled for local convenience. The API is available at `http://127.0.0.1:9200` and the Dashboards UI at `http://127.0.0.1:5601`.
+
+```javascript
+import { Client } from '@opensearch-project/opensearch';
+
+const client = new Client({ node: process.env.OPENSEARCH_URL });
+
+// Create an index
+await client.indices.create({ index: 'products' });
+
+// Index a document
+await client.index({
+  index: 'products',
+  body: { name: 'Widget', price: 9.99 },
+});
+
+// Search
+const { body } = await client.search({
+  index: 'products',
+  body: { query: { match: { name: 'widget' } } },
+});
+```
+
+### OpenSearch Dashboards
+
+Open `http://localhost:5601` in your browser for the Dashboards UI (no login required locally).
+
+### Reset OpenSearch Data
+
+```bash
+plattr search reset
+```
+
+Deletes the persistent volume and restarts OpenSearch.
 
 ## Authentication
 

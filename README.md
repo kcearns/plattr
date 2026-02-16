@@ -2,7 +2,7 @@
 
 > **Alpha software** — This project is under active development and not yet production-ready. APIs, configuration formats, and behavior may change without notice. Use at your own risk.
 
-An internal developer platform that gives teams a Vercel-like experience on top of Kubernetes. Define your app in a `plattr.yaml`, run `plattr dev` locally, push to deploy. Plattr handles databases, object storage, authentication, auto-generated REST APIs, preview environments, and production deployment.
+An internal developer platform that gives teams a Vercel-like experience on top of Kubernetes. Define your app in a `plattr.yaml`, run `plattr dev` locally, push to deploy. Plattr handles databases, object storage, authentication, Redis, OpenSearch, auto-generated REST APIs, preview environments, and production deployment.
 
 ## What You Get
 
@@ -12,6 +12,8 @@ An internal developer platform that gives teams a Vercel-like experience on top 
 | **PostgreSQL** | Pod on :5432 | Aurora (provisioned per-app schema) |
 | **Object storage** | MinIO on :9000 | S3 buckets |
 | **Auth (Keycloak)** | Dev instance on :8080 | Managed Keycloak on EKS |
+| **Redis** | Pod on :6379 | Managed Redis |
+| **OpenSearch** | Pod on :9200, Dashboards on :5601 | Managed OpenSearch |
 | **REST API (PostgREST)** | Auto-generated on :3001 | Sidecar in app pod, routed via `/api/rest` |
 | **Local deploy** | `plattr deploy local` (test, build, scan, deploy) | CI/CD via GitHub Actions |
 | **Preview environments** | `plattr preview start --pr 42` | Auto-created from PRs, TTL-based cleanup |
@@ -140,6 +142,12 @@ auth:
   providers:
     - google
     - github
+
+redis:
+  enabled: true
+
+search:
+  enabled: true
 
 local:
   port: 3000

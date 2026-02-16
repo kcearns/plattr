@@ -29,6 +29,12 @@ auth:
     - google
     - github
 
+redis:
+  enabled: true
+
+search:
+  enabled: true
+
 scaling:
   min: 2
   max: 20
@@ -74,6 +80,18 @@ local:
 |---|---|---|---|---|
 | `auth.enabled` | boolean | Yes | — | Enable Keycloak authentication. |
 | `auth.providers` | string[] | No | `[]` | Identity providers to configure: `google`, `github`, `saml`, `oidc`. |
+
+### `redis`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `redis.enabled` | boolean | Yes | — | Enable Redis cache. Locally runs Redis 7 in the Kind cluster. |
+
+### `search`
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `search.enabled` | boolean | Yes | — | Enable OpenSearch. Locally runs OpenSearch 2.18 with Dashboards in the Kind cluster. |
 
 ### `scaling`
 
@@ -135,6 +153,12 @@ auth:
   providers:
     - google
     - github
+
+redis:
+  enabled: true
+
+search:
+  enabled: true
 ```
 
 ## Notes

@@ -290,6 +290,8 @@ Plattr ensures that code written for local development works in production witho
 | `S3_BUCKET_*` | `{app}-{bucket}` | `plattr-{env}-{app}-{bucket}` |
 | `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/{app}` | `https://auth.{baseDomain}/realms/{app}` |
 | `AUTH_CLIENT_ID` | `{app}-app` | `{app}` |
+| `REDIS_URL` | `redis://127.0.0.1:6379` | `redis://{managed-redis}:6379` |
+| `OPENSEARCH_URL` | `http://127.0.0.1:9200` | `https://{managed-opensearch}:443` |
 
 ### Service Parity
 
@@ -299,6 +301,8 @@ Plattr ensures that code written for local development works in production witho
 | Object Storage | MinIO pod (port-forwarded to :9000) | AWS S3 |
 | Authentication | Keycloak pod (port-forwarded to :8080) | Keycloak on EKS (HA) |
 | REST API | PostgREST pod (port-forwarded to :3001) | PostgREST sidecar |
+| Redis | Redis pod (port-forwarded to :6379) | Managed Redis |
+| OpenSearch | OpenSearch pod (port-forwarded to :9200) | Managed OpenSearch |
 | App Server | Native dev server (run manually) | Production build in container |
 | Container Registry | Local registry on :5050 | ECR |
 
