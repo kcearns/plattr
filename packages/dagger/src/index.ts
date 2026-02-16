@@ -432,6 +432,12 @@ export class PlattrDev {
    */
   @func()
   async build(source: Directory, framework?: string): Promise<Container> {
+    // Always prefer a Dockerfile if one exists in the source directory
+    const entries = await source.entries()
+    if (entries.includes("Dockerfile")) {
+      return source.dockerBuild()
+    }
+
     const fw = framework || (await this.detectFramework(source))
 
     switch (fw) {
@@ -442,7 +448,7 @@ export class PlattrDev {
       case "static":
         return this.buildStatic(source)
       case "docker":
-        return this.buildDocker(source)
+        throw new Error("Framework detected as 'docker' but no Dockerfile found in source directory")
       default:
         throw new Error(`Unsupported framework: ${fw}`)
     }
@@ -636,7 +642,7 @@ export class PlattrDev {
   }
 
   private buildDocker(source: Directory): Container {
-    return dag.container().build(source)
+    return source.dockerBuild()
   }
 
   /**
