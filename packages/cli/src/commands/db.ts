@@ -1,21 +1,90 @@
-import { loadConfig, getDaggerModule } from '../lib/config';
+import { loadConfig } from '../lib/config';
 import { run } from '../lib/exec';
+import { execSync } from 'child_process';
+import { existsSync } from 'fs';
 
-export function dbMigrateCommand(engine?: string) {
-  console.log('Running database migrations...\n');
-  const engineArg = engine ? ` --engine=${engine}` : '';
-  run(`dagger call --mod=${getDaggerModule()} migrate --source=.${engineArg}`);
+function checkPsql(): void {
+  try {
+    execSync('which psql', { stdio: 'pipe' });
+  } catch {
+    console.error('psql is required for db shell. Install it: sudo pacman -S postgresql');
+    process.exit(1);
+  }
+}
+
+function checkLocalDb(): void {
+  try {
+    execSync('ss -tln sport = :5432 | grep -q 5432', { stdio: 'pipe', shell: '/bin/bash' });
+  } catch {
+    console.error('No database running. Start your environment first with: plattr dev');
+    process.exit(1);
+  }
+}
+
+function getLocalDbUrl(): { appName: string; schemaName: string; url: string } {
+  const config = loadConfig();
+  const appName = config.name;
+  const schemaName = appName.replace(/-/g, '_');
+  const url = `postgresql://${schemaName}_app:localdev@localhost:5432/platform?options=--search_path%3D${schemaName}`;
+  return { appName, schemaName, url };
 }
 
 export function dbShellCommand() {
+  checkPsql();
+  checkLocalDb();
+
+  const { url } = getLocalDbUrl();
   console.log('Opening database shell...\n');
-  run(`dagger call --mod=${getDaggerModule()} db-shell --source=. terminal`);
+  run(`psql "${url}"`, { stdio: 'inherit' });
+}
+
+export function dbMigrateCommand(engine?: string) {
+  checkLocalDb();
+
+  const { appName, schemaName, url } = getLocalDbUrl();
+  console.log('Running database migrations...\n');
+
+  if (engine === 'prisma' || (!engine && existsSync('prisma/schema.prisma'))) {
+    run(`npx prisma migrate deploy`, {
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: url },
+    });
+  } else if (engine === 'knex' || (!engine && existsSync('knexfile.js')) || (!engine && existsSync('knexfile.ts'))) {
+    run(`npx knex migrate:latest`, {
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: url },
+    });
+  } else if (existsSync('db/migrations')) {
+    // Raw SQL migrations — run .sql files in order
+    const { readdirSync } = require('fs');
+    const files = readdirSync('db/migrations')
+      .filter((f: string) => f.endsWith('.sql'))
+      .sort();
+    checkPsql();
+    for (const file of files) {
+      console.log(`  Applying ${file}...`);
+      run(`psql "${url}" -f db/migrations/${file}`, { stdio: 'inherit' });
+    }
+  } else {
+    console.error('No migration engine detected. Use --engine=prisma|knex or place SQL files in db/migrations/');
+    process.exit(1);
+  }
 }
 
 export function dbSeedCommand(seedFile?: string) {
-  const fileArg = seedFile ? ` --seed-file=${seedFile}` : '';
-  console.log('Seeding database...\n');
-  run(`dagger call --mod=${getDaggerModule()} seed --source=.${fileArg}`);
+  checkPsql();
+  checkLocalDb();
+
+  const { url } = getLocalDbUrl();
+  const file = seedFile || 'db/seeds.sql';
+
+  if (!existsSync(file)) {
+    console.error(`Seed file not found: ${file}`);
+    process.exit(1);
+  }
+
+  console.log(`Seeding database from ${file}...\n`);
+  run(`psql "${url}" -f ${file}`, { stdio: 'inherit' });
 }
 
 export function dbConnectCommand(env: string, appName: string) {
