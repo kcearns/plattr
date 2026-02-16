@@ -73,10 +73,10 @@ export class PlattrDev {
    * provides only the backing services with ports forwarded to localhost.
    *
    * Usage:
-   *   dagger call services --source=. up --ports=5432:5432,9000:9000,9001:9001,3001:3001,8080:8080
+   *   dagger call infra --source=. up --ports=5432:5432,9000:9000,9001:9001,3001:3001,8080:8080
    */
   @func()
-  async services(source: Directory): Promise<Service> {
+  async infra(source: Directory): Promise<Service> {
     const yamlContent = await source.file("plattr.yaml").contents()
     const config = parseConfig(yamlContent)
 

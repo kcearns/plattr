@@ -62,7 +62,7 @@ program
 
     // 2. Find any orphaned "dagger call dev" processes
     try {
-      const pids = execSync('pgrep -f "dagger call.*(dev|services)"', { encoding: 'utf-8' })
+      const pids = execSync('pgrep -f "dagger call.*(dev|infra)"', { encoding: 'utf-8' })
         .trim()
         .split('\n')
         .map((p) => parseInt(p, 10))
