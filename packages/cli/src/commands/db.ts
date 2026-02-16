@@ -25,7 +25,7 @@ function getLocalDbUrl(): { appName: string; schemaName: string; url: string } {
   const config = loadConfig();
   const appName = config.name;
   const schemaName = appName.replace(/-/g, '_');
-  const url = `postgresql://${schemaName}_app:localdev@localhost:5432/platform?options=--search_path%3D${schemaName}`;
+  const url = `postgresql://postgres:devpass@localhost:5432/platform?options=--search_path%3D${schemaName}`;
   return { appName, schemaName, url };
 }
 
