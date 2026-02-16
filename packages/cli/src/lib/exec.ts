@@ -1,6 +1,8 @@
 import { execSync, ExecSyncOptions } from 'child_process';
 
 export function run(command: string, options: ExecSyncOptions = {}): string {
+  process.on('SIGINT', () => process.exit(0));
+
   try {
     return execSync(command, {
       encoding: 'utf-8',
@@ -9,8 +11,8 @@ export function run(command: string, options: ExecSyncOptions = {}): string {
       ...options,
     }) as string;
   } catch (err: any) {
-    if (err.status === 130) {
-      // Ctrl+C — not an error
+    if (err.status === 130 || err.status === 1) {
+      // Ctrl+C — not an error (Dagger exits with status 1 on interrupt)
       process.exit(0);
     }
     throw err;
