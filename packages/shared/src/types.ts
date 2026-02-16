@@ -16,6 +16,12 @@ export interface PlattrConfig {
     enabled: boolean;
     providers?: string[];
   };
+  redis?: {
+    enabled: boolean;
+  };
+  search?: {
+    enabled: boolean;
+  };
   scaling?: {
     min?: number;
     max?: number;
@@ -35,6 +41,8 @@ export interface ApplicationSpec {
   database?: { enabled: boolean; schemaName?: string };
   storage?: { enabled: boolean; buckets: Array<{ name: string; public: boolean }> };
   auth?: { enabled: boolean; providers?: string[] };
+  redis?: { enabled: boolean };
+  search?: { enabled: boolean };
   scaling?: { min: number; max: number; targetCPU: number };
   domain?: string;
 }

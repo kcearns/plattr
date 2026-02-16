@@ -112,6 +112,8 @@ export async function initCommand() {
     { type: 'confirm', name: 'database', message: 'Enable database?', initial: true },
     { type: 'confirm', name: 'storage', message: 'Enable storage?', initial: false },
     { type: 'confirm', name: 'auth', message: 'Enable authentication?', initial: false },
+    { type: 'confirm', name: 'redis', message: 'Enable Redis cache?', initial: false },
+    { type: 'confirm', name: 'search', message: 'Enable OpenSearch?', initial: false },
   ]);
 
   if (!answers.name) {
@@ -129,6 +131,12 @@ export async function initCommand() {
   }
   if (answers.auth) {
     yamlContent += `\nauth:\n  enabled: true\n  providers:\n    - google\n    - github\n`;
+  }
+  if (answers.redis) {
+    yamlContent += `\nredis:\n  enabled: true\n`;
+  }
+  if (answers.search) {
+    yamlContent += `\nsearch:\n  enabled: true\n`;
   }
   yamlContent += `\nlocal:\n  port: 3000\n`;
 

@@ -147,6 +147,18 @@ spec:
                           - github
                           - saml
                           - oidc
+                redis:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: false
+                search:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                      default: false
                 scaling:
                   type: object
                   properties:

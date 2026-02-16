@@ -13,6 +13,8 @@ export interface AppConfig {
   database?: { enabled: boolean; schemaName?: string };
   storage?: { enabled: boolean; buckets?: Array<{ name: string; public: boolean }> };
   auth?: { enabled: boolean };
+  redis?: { enabled: boolean };
+  search?: { enabled: boolean };
   local?: { port?: number; env?: Record<string, string> };
 }
 

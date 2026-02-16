@@ -96,3 +96,29 @@ export function dbResetCommand() {
   execSync(`kubectl rollout restart deployment/plattr-pg -n ${NAMESPACE}`, { stdio: 'inherit' });
   console.log('Database reset. Run "plattr dev" to recreate schemas.');
 }
+
+export function redisResetCommand() {
+  try {
+    execSync(`kubectl cluster-info --context kind-${CLUSTER_NAME}`, { stdio: 'pipe' });
+  } catch {
+    console.log('No local Plattr cluster found. Run "plattr dev" to create one.');
+    return;
+  }
+
+  execSync(`kubectl delete pvc plattr-redis-data -n ${NAMESPACE}`, { stdio: 'inherit' });
+  execSync(`kubectl rollout restart deployment/plattr-redis -n ${NAMESPACE}`, { stdio: 'inherit' });
+  console.log('Redis data cleared.');
+}
+
+export function searchResetCommand() {
+  try {
+    execSync(`kubectl cluster-info --context kind-${CLUSTER_NAME}`, { stdio: 'pipe' });
+  } catch {
+    console.log('No local Plattr cluster found. Run "plattr dev" to create one.');
+    return;
+  }
+
+  execSync(`kubectl delete pvc plattr-opensearch-data -n ${NAMESPACE}`, { stdio: 'inherit' });
+  execSync(`kubectl rollout restart deployment/plattr-opensearch -n ${NAMESPACE}`, { stdio: 'inherit' });
+  console.log('OpenSearch data cleared.');
+}

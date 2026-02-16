@@ -179,12 +179,18 @@ function applyManifests(config: AppConfig): void {
   if (config.auth?.enabled) {
     execSync(`kubectl apply -f ${manifestsPath}/keycloak.yaml`, { stdio: 'inherit' });
   }
+  if (config.redis?.enabled) {
+    execSync(`kubectl apply -f ${manifestsPath}/redis.yaml`, { stdio: 'inherit' });
+  }
+  if (config.search?.enabled) {
+    execSync(`kubectl apply -f ${manifestsPath}/opensearch.yaml`, { stdio: 'inherit' });
+  }
 }
 
 /**
  * Wait for a deployment to be ready.
  */
-function waitForDeployment(name: string, timeoutSeconds = 60): void {
+function waitForDeployment(name: string, timeoutSeconds = 180): void {
   console.log(`  Waiting for ${name}...`);
   execSync(
     `kubectl rollout status deployment/${name} -n ${NAMESPACE} --timeout=${timeoutSeconds}s`,
@@ -287,6 +293,15 @@ function buildEnvVars(config: AppConfig): Record<string, string> {
     envVars.AUTH_CLIENT_ID = `${appName}-app`;
   }
 
+  if (config.redis?.enabled) {
+    envVars.REDIS_URL = 'redis://127.0.0.1:6379';
+  }
+
+  if (config.search?.enabled) {
+    envVars.OPENSEARCH_URL = 'http://127.0.0.1:9200';
+    envVars.OPENSEARCH_DASHBOARDS_URL = 'http://127.0.0.1:5601';
+  }
+
   // Apply local.env overrides
   if (config.local?.env) {
     for (const [key, value] of Object.entries(config.local.env)) {
@@ -305,7 +320,7 @@ function startPortForwards(config: AppConfig): number[] {
   const pids: number[] = [];
 
   const forward = (svc: string, ports: string) => {
-    const proc = spawn('kubectl', ['port-forward', `svc/${svc}`, ports, '-n', NAMESPACE], {
+    const proc = spawn('kubectl', ['port-forward', '--address', '0.0.0.0', `svc/${svc}`, ports, '-n', NAMESPACE], {
       stdio: 'ignore',
       detached: true,
     });
@@ -329,6 +344,15 @@ function startPortForwards(config: AppConfig): number[] {
     forward('plattr-keycloak', '8080:8080');
   }
 
+  if (config.redis?.enabled) {
+    forward('plattr-redis', '6379:6379');
+  }
+
+  if (config.search?.enabled) {
+    forward('plattr-opensearch', '9200:9200');
+    forward('plattr-opensearch-dashboards', '5601:5601');
+  }
+
   return pids;
 }
 
@@ -350,6 +374,13 @@ function printServiceUrls(config: AppConfig): void {
   }
   if (config.auth?.enabled) {
     console.log(`    Keycloak:   http://127.0.0.1:8080`);
+  }
+  if (config.redis?.enabled) {
+    console.log(`    Redis:      redis://127.0.0.1:6379`);
+  }
+  if (config.search?.enabled) {
+    console.log(`    OpenSearch:  http://127.0.0.1:9200`);
+    console.log(`    Dashboards:  http://127.0.0.1:5601`);
   }
 }
 
@@ -418,7 +449,15 @@ export function devCommand(port?: number) {
   }
 
   if (config.auth?.enabled) {
-    waitForDeployment('plattr-keycloak', 120);
+    waitForDeployment('plattr-keycloak');
+  }
+
+  if (config.redis?.enabled) {
+    waitForDeployment('plattr-redis');
+  }
+
+  if (config.search?.enabled) {
+    waitForDeployment('plattr-opensearch');
   }
 
   console.log('\n[PLATTR] Infrastructure is ready.');

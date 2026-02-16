@@ -76,6 +76,14 @@ function buildClusterEnvVars(config: AppConfig): Record<string, string> {
     envVars.AUTH_CLIENT_ID = `${appName}-app`;
   }
 
+  if (config.redis?.enabled) {
+    envVars.REDIS_URL = 'redis://plattr-redis:6379';
+  }
+
+  if (config.search?.enabled) {
+    envVars.OPENSEARCH_URL = 'http://plattr-opensearch:9200';
+  }
+
   return envVars;
 }
 
@@ -276,7 +284,7 @@ export async function deployLocalCommand(options: DeployLocalOptions = {}) {
   // --- Step 6: Port-forward ---
   const portForward = spawn(
     'kubectl',
-    ['port-forward', `svc/${appName}`, `${appPort}:${appPort}`, '-n', NAMESPACE],
+    ['port-forward', '--address', '0.0.0.0', `svc/${appName}`, `${appPort}:${appPort}`, '-n', NAMESPACE],
     { stdio: 'ignore', detached: true },
   );
   portForward.unref();

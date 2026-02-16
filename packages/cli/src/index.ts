@@ -7,7 +7,7 @@ import { testCommand, testCiCommand } from './commands/test';
 import { buildCommand } from './commands/build';
 import { previewCommand, previewListCommand } from './commands/preview';
 import { dbMigrateCommand, dbShellCommand, dbSeedCommand, dbConnectCommand } from './commands/db';
-import { infraStatusCommand, infraStopCommand, infraStartCommand, infraDestroyCommand, dbResetCommand } from './commands/infra';
+import { infraStatusCommand, infraStopCommand, infraStartCommand, infraDestroyCommand, dbResetCommand, redisResetCommand, searchResetCommand } from './commands/infra';
 import { deployLocalCommand, undeployLocalCommand } from './commands/deploy-local';
 import { statusCommand } from './commands/status';
 import { logsCommand } from './commands/logs';
@@ -135,6 +135,20 @@ db.command('connect')
 db.command('reset')
   .description('Reset local database (deletes all data)')
   .action(() => dbResetCommand());
+
+// --- Redis ---
+const redis = program.command('redis').description('Redis operations');
+
+redis.command('reset')
+  .description('Reset local Redis (deletes all data)')
+  .action(() => redisResetCommand());
+
+// --- Search ---
+const search = program.command('search').description('OpenSearch operations');
+
+search.command('reset')
+  .description('Reset local OpenSearch (deletes all data)')
+  .action(() => searchResetCommand());
 
 // --- Status ---
 program
