@@ -111,3 +111,31 @@ spec:
   ports:
     - port: 5601
       targetPort: 5601
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: plattr-opensearch
+  namespace: plattr-local
+spec:
+  entryPoints:
+    - opensearch
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: plattr-opensearch
+          port: 9200
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: plattr-opensearch-dashboards
+  namespace: plattr-local
+spec:
+  entryPoints:
+    - dashboards
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: plattr-opensearch-dashboards
+          port: 5601

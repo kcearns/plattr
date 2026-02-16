@@ -59,3 +59,17 @@ spec:
   ports:
     - port: 6379
       targetPort: 6379
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: plattr-redis
+  namespace: plattr-local
+spec:
+  entryPoints:
+    - redis
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: plattr-redis
+          port: 6379

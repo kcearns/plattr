@@ -11,69 +11,6 @@ export function getStateDir(): string {
 }
 
 /**
- * Check if a PID is alive.
- */
-function isAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Read PIDs from the state file, filtering out dead processes.
- */
-export function readAlivePids(appName: string): number[] {
-  const pidFile = join(getStateDir(), `${appName}.pids`);
-  if (!existsSync(pidFile)) return [];
-
-  return readFileSync(pidFile, 'utf-8')
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .map(Number)
-    .filter(isAlive);
-}
-
-/**
- * Append new PIDs to the state file, pruning dead PIDs first.
- */
-export function appendPids(appName: string, newPids: number[]): void {
-  const alive = readAlivePids(appName);
-  const combined = [...alive, ...newPids];
-  const pidFile = join(getStateDir(), `${appName}.pids`);
-  writeFileSync(pidFile, combined.join('\n') + '\n');
-}
-
-/**
- * Overwrite the PID file (used after killing everything).
- */
-export function writePids(appName: string, pids: number[]): void {
-  const pidFile = join(getStateDir(), `${appName}.pids`);
-  if (pids.length === 0) {
-    if (existsSync(pidFile)) unlinkSync(pidFile);
-    return;
-  }
-  writeFileSync(pidFile, pids.join('\n') + '\n');
-}
-
-/**
- * Kill all tracked PIDs for the app and clear the PID file.
- */
-export function killAllPids(appName: string): void {
-  const pidFile = join(getStateDir(), `${appName}.pids`);
-  if (!existsSync(pidFile)) return;
-
-  const pids = readFileSync(pidFile, 'utf-8').trim().split('\n').filter(Boolean).map(Number);
-  for (const pid of pids) {
-    try { process.kill(pid, 'SIGTERM'); } catch {}
-  }
-  unlinkSync(pidFile);
-}
-
-/**
  * Read existing env file into a Map, merging in new vars, and write back.
  * New values overwrite existing keys.
  */
@@ -121,7 +58,7 @@ export function readEnvFile(appName: string): Record<string, string> | null {
 }
 
 /**
- * Delete both .pids and .env state files for the app.
+ * Delete state files for the app.
  */
 export function clearState(appName: string): void {
   const dir = getStateDir();

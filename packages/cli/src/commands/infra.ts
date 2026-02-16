@@ -1,6 +1,6 @@
 import { execSync } from 'child_process';
 import { loadConfig } from '../lib/config';
-import { killAllPids, clearState } from '../lib/state';
+import { clearState } from '../lib/state';
 
 const NAMESPACE = 'plattr-local';
 const CLUSTER_NAME = 'plattr';
@@ -37,12 +37,6 @@ export function infraStopCommand() {
     return;
   }
 
-  // Kill all tracked PIDs and clear the PID file (keep env file)
-  const appName = getAppName();
-  if (appName) {
-    killAllPids(appName);
-  }
-
   // Scale down deployments to save resources
   execSync(`kubectl scale deployment --all --replicas=0 -n ${NAMESPACE}`, { stdio: 'inherit' });
   console.log('Infrastructure stopped. Data is preserved. Run "plattr dev" to restart.');
@@ -61,10 +55,9 @@ export function infraStartCommand() {
 }
 
 export function infraDestroyCommand() {
-  // Kill all tracked PIDs and clear all state files
+  // Clear state files
   const appName = getAppName();
   if (appName) {
-    killAllPids(appName);
     clearState(appName);
   }
 

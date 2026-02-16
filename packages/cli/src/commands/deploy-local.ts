@@ -1,8 +1,8 @@
-import { spawn, execSync, spawnSync } from 'child_process';
+import { execSync, spawnSync } from 'child_process';
 import { createInterface } from 'readline';
 import { loadConfig, getDaggerModule, type AppConfig } from '../lib/config';
 import { run } from '../lib/exec';
-import { appendPids, killAllPids, readEnvFile } from '../lib/state';
+import { readEnvFile } from '../lib/state';
 import { detectTestRunner, runTests } from './test';
 
 const NAMESPACE = 'plattr-local';
@@ -150,7 +150,21 @@ spec:
     - port: ${port}
       targetPort: 3000`;
 
-  return [configMap, deployment, service].join('\n---\n');
+  const ingressRoute = `apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: ${appName}
+  namespace: ${NAMESPACE}
+spec:
+  entryPoints:
+    - app
+  routes:
+    - match: HostSNI(\`*\`)
+      services:
+        - name: ${appName}
+          port: ${port}`;
+
+  return [configMap, deployment, service, ingressRoute].join('\n---\n');
 }
 
 /**
@@ -282,18 +296,6 @@ export async function deployLocalCommand(options: DeployLocalOptions = {}) {
   console.log('\nWaiting for deployment to be ready...');
   run(`kubectl rollout status deployment/${appName} -n ${NAMESPACE} --timeout=120s`);
 
-  // --- Step 6: Port-forward ---
-  const portForward = spawn(
-    'kubectl',
-    ['port-forward', '--address', '0.0.0.0', `svc/${appName}`, `${appPort}:${appPort}`, '-n', NAMESPACE],
-    { stdio: 'ignore', detached: true },
-  );
-  portForward.unref();
-
-  if (portForward.pid) {
-    appendPids(appName, [portForward.pid]);
-  }
-
   // --- Summary ---
   console.log('\nPipeline complete:');
   console.log(`  Tests:     ${testResult}`);
@@ -309,13 +311,11 @@ export function undeployLocalCommand() {
 
   console.log(`Removing "${appName}" from local cluster...\n`);
 
-  // Kill all tracked PIDs (port-forwards from both dev and deploy)
-  killAllPids(appName);
-
   const resources = [
     `deployment/${appName}`,
     `svc/${appName}`,
     `configmap/${appName}-env`,
+    `ingressroutetcp/${appName}`,
   ];
 
   for (const resource of resources) {

@@ -1,8 +1,8 @@
-import { spawn, execSync } from 'child_process';
+import { execSync } from 'child_process';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { loadConfig, type AppConfig } from '../lib/config';
-import { getStateDir, killAllPids, appendPids, mergeEnvFile } from '../lib/state';
+import { getStateDir, mergeEnvFile } from '../lib/state';
 
 const NAMESPACE = 'plattr-local';
 const CLUSTER_NAME = 'plattr';
@@ -60,6 +60,22 @@ function containerRunning(name: string): boolean {
       stdio: 'pipe',
     }).trim();
     return state === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if an existing Kind cluster has the required port mappings.
+ * Returns false if the cluster exists but lacks port bindings (old cluster).
+ */
+function clusterHasPortMappings(): boolean {
+  try {
+    const result = execSync(
+      `docker inspect ${CLUSTER_NAME}-control-plane --format '{{json .HostConfig.PortBindings}}'`,
+      { encoding: 'utf-8', stdio: 'pipe' },
+    ).trim();
+    return result.includes('5432');
   } catch {
     return false;
   }
@@ -141,9 +157,17 @@ function ensureCluster(): void {
   // Ensure registry is running before creating the cluster
   ensureRegistry();
 
-  if (!clusterExists()) {
+  if (clusterExists()) {
+    // Check if existing cluster has port mappings (created before Traefik migration)
+    if (!clusterHasPortMappings()) {
+      console.error('\nYour existing Kind cluster was created without port mappings required for Traefik ingress.');
+      console.error('Run `plattr infra destroy` then `plattr dev` to recreate with Traefik ingress.\n');
+      process.exit(1);
+    }
+  } else {
     console.log('Creating local Plattr cluster...');
-    execSync(`kind create cluster --name ${CLUSTER_NAME}`, { stdio: 'inherit' });
+    const manifestsPath = getManifestsPath();
+    execSync(`kind create cluster --name ${CLUSTER_NAME} --config ${manifestsPath}/kind-config.yaml`, { stdio: 'inherit' });
 
     // Connect registry to Kind and configure containerd on nodes
     connectRegistryToKind();
@@ -154,8 +178,29 @@ function ensureCluster(): void {
 }
 
 /**
+ * Wait for a DaemonSet to have all pods ready.
+ */
+function waitForDaemonSet(name: string, timeoutSeconds = 120): void {
+  console.log(`  Waiting for ${name} DaemonSet...`);
+  const deadline = Date.now() + timeoutSeconds * 1000;
+  while (Date.now() < deadline) {
+    try {
+      const result = execSync(
+        `kubectl get daemonset/${name} -n ${NAMESPACE} -o jsonpath='{.status.numberReady}'`,
+        { encoding: 'utf-8', stdio: 'pipe' },
+      ).trim();
+      if (parseInt(result, 10) > 0) return;
+    } catch {
+      // DaemonSet may not exist yet
+    }
+    execSync('sleep 2');
+  }
+  throw new Error(`DaemonSet ${name} failed to become ready after ${timeoutSeconds}s`);
+}
+
+/**
  * Apply infrastructure manifests selectively based on config.
- * Namespace is always created first, then only enabled services are applied.
+ * Namespace is always created first, then Traefik, then only enabled services.
  */
 function applyManifests(config: AppConfig): void {
   const manifestsPath = getManifestsPath();
@@ -165,6 +210,13 @@ function applyManifests(config: AppConfig): void {
     `kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -`,
     { stdio: 'inherit' },
   );
+
+  // Apply Traefik CRDs and deployment
+  execSync(`kubectl apply -f ${manifestsPath}/traefik-crds.yaml`, { stdio: 'inherit' });
+  execSync(`kubectl apply -f ${manifestsPath}/traefik.yaml`, { stdio: 'inherit' });
+
+  // Wait for Traefik to be ready before applying IngressRoutes
+  waitForDaemonSet('traefik');
 
   // Always apply postgres
   execSync(`kubectl apply -f ${manifestsPath}/postgres.yaml`, { stdio: 'inherit' });
@@ -313,50 +365,6 @@ function buildEnvVars(config: AppConfig): Record<string, string> {
 }
 
 /**
- * Start kubectl port-forward processes detached from the parent.
- * Returns the PIDs so they can be written to a file.
- */
-function startPortForwards(config: AppConfig): number[] {
-  const pids: number[] = [];
-
-  const forward = (svc: string, ports: string) => {
-    const proc = spawn('kubectl', ['port-forward', '--address', '0.0.0.0', `svc/${svc}`, ports, '-n', NAMESPACE], {
-      stdio: 'ignore',
-      detached: true,
-    });
-    proc.unref();
-    if (proc.pid) pids.push(proc.pid);
-  };
-
-  // Always forward Postgres
-  forward('plattr-pg', '5432:5432');
-
-  if (config.database?.enabled) {
-    forward('plattr-postgrest', '3001:3001');
-  }
-
-  if (config.storage?.enabled) {
-    forward('plattr-minio', '9000:9000');
-    forward('plattr-minio-console', '9001:9001');
-  }
-
-  if (config.auth?.enabled) {
-    forward('plattr-keycloak', '8080:8080');
-  }
-
-  if (config.redis?.enabled) {
-    forward('plattr-redis', '6379:6379');
-  }
-
-  if (config.search?.enabled) {
-    forward('plattr-opensearch', '9200:9200');
-    forward('plattr-opensearch-dashboards', '5601:5601');
-  }
-
-  return pids;
-}
-
-/**
  * Print service URLs.
  */
 function printServiceUrls(config: AppConfig): void {
@@ -398,10 +406,10 @@ export function devCommand(port?: number) {
   console.log(`Starting local dev environment for "${appName}"...`);
   console.log(`Framework: ${framework}`);
 
-  // 1. Ensure Kind cluster
+  // 1. Ensure Kind cluster (with port mappings for Traefik)
   ensureCluster();
 
-  // 2. Apply infrastructure manifests (only enabled services)
+  // 2. Apply infrastructure manifests (Traefik + enabled services)
   console.log('\nApplying infrastructure manifests...');
   applyManifests(config);
 
@@ -462,28 +470,16 @@ export function devCommand(port?: number) {
 
   console.log('\n[PLATTR] Infrastructure is ready.');
 
-  // 4. Kill any leftover port-forwards from a previous run
-  killAllPids(appName);
-
-  // 5. Start detached port-forwards
-  const pids = startPortForwards(config);
-
-  // Write PIDs so "plattr infra stop" can clean them up
-  appendPids(appName, pids);
-
-  // Brief pause for port-forwards to bind
-  execSync('sleep 1');
-
-  // 6. Build env vars
+  // 4. Build env vars
   const envVars = buildEnvVars(config);
 
-  // 7. Merge env vars into env file for easy sourcing
+  // 5. Merge env vars into env file for easy sourcing
   mergeEnvFile(appName, envVars);
 
-  // 8. Print service URLs
+  // 6. Print service URLs
   printServiceUrls(config);
 
-  // 9. Print export commands
+  // 7. Print export commands
   console.log('\n  Run these in your terminal:\n');
   for (const [key, value] of Object.entries(envVars)) {
     console.log(`    export ${key}="${value}"`);
@@ -491,11 +487,10 @@ export function devCommand(port?: number) {
 
   console.log(`\n  Or source all at once: source .plattr/${appName}.env`);
 
-  // 10. Print dev server hints
+  // 8. Print dev server hints
   console.log('\n  Then start your dev server:');
   console.log('    npx next dev        # Next.js');
   console.log('    bin/rails server    # Rails');
 
-  console.log(`\n  Tip: Run plattr deploy local to test the production container in your local cluster.`);
-  console.log('  Run plattr infra stop to stop port-forwards and save resources.\n');
+  console.log(`\n  Tip: Run plattr deploy local to test the production container in your local cluster.\n`);
 }

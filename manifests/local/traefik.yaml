@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik
+  namespace: plattr-local
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik
+rules:
+  - apiGroups: [""]
+    resources: ["services", "endpoints", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["traefik.io"]
+    resources: ["ingressroutes", "ingressroutetcps"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik
+subjects:
+  - kind: ServiceAccount
+    name: traefik
+    namespace: plattr-local
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: traefik
+  namespace: plattr-local
+spec:
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik
+      hostNetwork: true
+      containers:
+        - name: traefik
+          image: traefik:v3.2
+          args:
+            - --api.dashboard=false
+            - --providers.kubernetescrd
+            - --providers.kubernetescrd.namespaces=plattr-local
+            - --entrypoints.postgres.address=:5432
+            - --entrypoints.postgrest.address=:3001
+            - --entrypoints.minio.address=:9000
+            - --entrypoints.minio-console.address=:9001
+            - --entrypoints.keycloak.address=:8080
+            - --entrypoints.redis.address=:6379
+            - --entrypoints.opensearch.address=:9200
+            - --entrypoints.dashboards.address=:5601
+            - --entrypoints.app.address=:3000
+          resources:
+            requests:
+              memory: 64Mi
+              cpu: 50m
