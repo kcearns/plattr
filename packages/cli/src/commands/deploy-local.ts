@@ -93,6 +93,7 @@ function buildClusterEnvVars(config: AppConfig): Record<string, string> {
 function generateManifests(config: AppConfig, port: number): string {
   const appName = config.name;
   const envVars = buildClusterEnvVars(config);
+  envVars.HOSTNAME = '0.0.0.0';
 
   const configMapData = Object.entries(envVars)
     .map(([key, value]) => `    ${key}: "${value}"`)
