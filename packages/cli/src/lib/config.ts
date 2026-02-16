@@ -10,7 +10,7 @@ export function getDaggerModule(): string {
 export interface AppConfig {
   name: string;
   framework?: string;
-  database?: { enabled: boolean };
+  database?: { enabled: boolean; schemaName?: string };
   storage?: { enabled: boolean; buckets?: Array<{ name: string; public: boolean }> };
   auth?: { enabled: boolean };
   local?: { port?: number; env?: Record<string, string> };

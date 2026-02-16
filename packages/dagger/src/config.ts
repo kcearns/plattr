@@ -8,6 +8,7 @@ export interface PlattrConfig {
   framework?: string
   database?: { enabled: boolean; schemaName?: string }
   storage?: { enabled: boolean; buckets: Array<{ name: string; public: boolean }> }
+  auth?: { enabled: boolean }
   local?: { port?: number; env?: Record<string, string> }
 }
 
@@ -54,6 +55,9 @@ export function parseConfig(yaml: string): PlattrConfig {
         if (!config.storage) config.storage = { enabled: false, buckets: [] }
         if (key === "enabled") config.storage.enabled = value === "true"
         if (key === "buckets") inBuckets = true
+      } else if (section === "auth") {
+        if (!config.auth) config.auth = { enabled: false }
+        if (key === "enabled") config.auth.enabled = value === "true"
       } else if (section === "local") {
         if (!config.local) config.local = {}
         if (key === "port") config.local.port = parseInt(value, 10)
