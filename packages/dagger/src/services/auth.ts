@@ -20,7 +20,7 @@ export class LocalAuth {
       .withEnvVariable("KC_HEALTH_ENABLED", "true")
       .withEnvVariable("KC_METRICS_ENABLED", "true")
       .withExposedPort(8080)
-      .withExec(["start-dev"])
+      .withExec(["/opt/keycloak/bin/kc.sh", "start-dev"])
       .asService()
   }
 
@@ -45,7 +45,7 @@ export class LocalAuth {
       .withEnvVariable("KC_HEALTH_ENABLED", "true")
       .withEnvVariable("KC_METRICS_ENABLED", "true")
       .withExposedPort(8080)
-      .withExec(["start-dev"])
+      .withExec(["/opt/keycloak/bin/kc.sh", "start-dev"])
       .asService()
   }
 
