@@ -154,22 +154,28 @@ export class PlattrDev {
 
     // --- Infra-only mode: return a lightweight proxy without the app ---
     if (infraOnly) {
-      const portForwards: Array<{ local: number; host: string; remote: number }> = []
+      // Separate services into core (fast) and auth (slow Keycloak)
+      const coreServices: Array<{ name: string; service: Service }> = []
+      const corePortForwards: Array<{ local: number; host: string; remote: number }> = []
+      let authService: Service | null = null
 
-      for (const { name } of services) {
+      for (const { name, service } of services) {
         switch (name) {
           case "db":
-            portForwards.push({ local: 5432, host: name, remote: 5432 })
+            coreServices.push({ name, service })
+            corePortForwards.push({ local: 5432, host: name, remote: 5432 })
             break
           case "api":
-            portForwards.push({ local: 3001, host: name, remote: 3001 })
+            coreServices.push({ name, service })
+            corePortForwards.push({ local: 3001, host: name, remote: 3001 })
             break
           case "storage":
-            portForwards.push({ local: 9000, host: name, remote: 9000 })
-            portForwards.push({ local: 9001, host: name, remote: 9001 })
+            coreServices.push({ name, service })
+            corePortForwards.push({ local: 9000, host: name, remote: 9000 })
+            corePortForwards.push({ local: 9001, host: name, remote: 9001 })
             break
           case "auth":
-            portForwards.push({ local: 8080, host: name, remote: 8080 })
+            authService = service
             break
         }
       }
@@ -177,18 +183,25 @@ export class PlattrDev {
       let ctr = dag
         .container()
         .from("alpine:3.19")
-        .withExec(["apk", "add", "--no-cache", "socat", "postgresql-client"])
+        .withExec(["apk", "add", "--no-cache", "socat", "postgresql-client", "curl"])
 
-      for (const { name, service } of services) {
+      // Bind only core services — container starts without waiting for Keycloak
+      for (const { name, service } of coreServices) {
         ctr = ctr.withServiceBinding(name, service)
       }
-      for (const pf of portForwards) {
-        ctr = ctr.withExposedPort(pf.local)
+
+      // Bind Keycloak separately if enabled
+      if (authService) {
+        ctr = ctr.withServiceBinding("auth", authService)
       }
 
-      const socatLines = portForwards.map(
-        (pf) => `socat TCP-LISTEN:${pf.local},fork,reuseaddr TCP:${pf.host}:${pf.remote} &`,
-      )
+      // Expose all ports (core + auth)
+      for (const pf of corePortForwards) {
+        ctr = ctr.withExposedPort(pf.local)
+      }
+      if (authService) {
+        ctr = ctr.withExposedPort(8080)
+      }
 
       const waitForPg = config.database?.enabled
         ? [
@@ -201,7 +214,36 @@ export class PlattrDev {
           ]
         : []
 
-      const script = [...waitForPg, ...socatLines, `echo "Infrastructure services ready."`, `sleep infinity`].join("\n")
+      // Start socat for core services immediately
+      const coreSocatLines = corePortForwards.map(
+        (pf) => `socat TCP-LISTEN:${pf.local},fork,reuseaddr TCP:${pf.host}:${pf.remote} &`,
+      )
+
+      // Keycloak socat starts in background after health check
+      const authSocatLines = authService
+        ? [
+            `# Start Keycloak port forwarding in background after it becomes healthy`,
+            `(`,
+            `  echo "Waiting for Keycloak..."`,
+            `  for i in $(seq 1 120); do`,
+            `    if curl -sf http://auth:8080/health/ready > /dev/null 2>&1; then`,
+            `      echo "Keycloak is ready."`,
+            `      socat TCP-LISTEN:8080,fork,reuseaddr TCP:auth:8080 &`,
+            `      break`,
+            `    fi`,
+            `    sleep 2`,
+            `  done`,
+            `) &`,
+          ]
+        : []
+
+      const script = [
+        ...waitForPg,
+        ...coreSocatLines,
+        `echo "Core infrastructure services ready (db, storage, api)."`,
+        ...authSocatLines,
+        `sleep infinity`,
+      ].join("\n")
 
       return ctr.asService({ args: ["sh", "-c", script] })
     }
