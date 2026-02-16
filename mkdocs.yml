@@ -1,0 +1,47 @@
+site_name: Plattr
+site_description: An internal developer platform — Vercel-like experience on Kubernetes
+repo_url: https://github.com/kevin/plattr
+repo_name: plattr
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - search.suggest
+    - search.highlight
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Developer Guide: developer-guide.md
+  - Plattr Team Guide: plattr-team-guide.md
+  - Reference:
+      - Architecture: reference/architecture.md
+      - CLI: reference/cli.md
+      - CRDs: reference/crds.md
+      - plattr.yaml: reference/plattr-yaml.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - toc:
+      permalink: true
