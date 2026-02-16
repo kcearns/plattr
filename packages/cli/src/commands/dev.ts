@@ -101,8 +101,9 @@ export function devCommand(port?: number) {
   const daggerArgs = [
     'call',
     `--mod=${getDaggerModule()}`,
-    'infra',
+    'dev',
     '--source=.',
+    '--infra-only',
     'up',
     `--ports=${servicePorts}`,
   ];

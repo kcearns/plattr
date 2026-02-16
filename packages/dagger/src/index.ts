@@ -66,109 +66,20 @@ export class PlattrDev {
   }
 
   /**
-   * Start only the infrastructure services (PostgreSQL, MinIO, PostgREST,
-   * Keycloak) without the application container.
-   *
-   * The app runs natively on the host with hot reload — this function
-   * provides only the backing services with ports forwarded to localhost.
-   *
-   * Usage:
-   *   dagger call infra --source=. up --ports=5432:5432,9000:9000,9001:9001,3001:3001,8080:8080
-   */
-  @func()
-  async infra(source: Directory): Promise<Service> {
-    const yamlContent = await source.file("plattr.yaml").contents()
-    const config = parseConfig(yamlContent)
-
-    const appName = config.name
-    const schemaName = config.database?.schemaName || appName.replace(/-/g, "_")
-    const appPort = config.local?.port || 3000
-
-    const services: Array<{ name: string; service: Service }> = []
-    const portForwards: Array<{ local: number; host: string; remote: number }> = []
-
-    // --- PostgreSQL ---
-    if (config.database?.enabled) {
-      const pgService = startPostgres(appName, schemaName)
-      services.push({ name: "db", service: pgService })
-      portForwards.push({ local: 5432, host: "db", remote: 5432 })
-
-      // --- PostgREST (requires PG) ---
-      const postgrestService = startPostgrest(appName, schemaName, pgService)
-      services.push({ name: "api", service: postgrestService })
-      portForwards.push({ local: 3001, host: "api", remote: 3001 })
-    }
-
-    // --- MinIO ---
-    if (config.storage?.enabled) {
-      const minioService = startMinio()
-      services.push({ name: "storage", service: minioService })
-      portForwards.push({ local: 9000, host: "storage", remote: 9000 })
-      portForwards.push({ local: 9001, host: "storage", remote: 9001 })
-
-      const buckets = config.storage.buckets || []
-      if (buckets.length > 0) {
-        await createBuckets(minioService, buckets, appName)
-      }
-    }
-
-    // --- Keycloak (Auth) ---
-    if (config.auth?.enabled) {
-      const auth = new LocalAuth()
-      const authService = auth.serve(appName)
-      services.push({ name: "auth", service: authService })
-      portForwards.push({ local: 8080, host: "auth", remote: 8080 })
-
-      await auth.provisionRealm(authService, appName, `http://localhost:${appPort}/*`)
-    }
-
-    // Build a lightweight proxy container that binds all services and
-    // forwards their ports to localhost via socat.
-    let ctr = dag
-      .container()
-      .from("alpine:3.19")
-      .withExec(["apk", "add", "--no-cache", "socat", "postgresql-client"])
-
-    // Bind all infrastructure services
-    for (const { name, service } of services) {
-      ctr = ctr.withServiceBinding(name, service)
-    }
-
-    // Expose all infrastructure ports
-    for (const pf of portForwards) {
-      ctr = ctr.withExposedPort(pf.local)
-    }
-
-    // Build startup script: wait for PG, then run socat forwarders
-    const socatLines = portForwards.map(
-      (pf) => `socat TCP-LISTEN:${pf.local},fork,reuseaddr TCP:${pf.host}:${pf.remote} &`,
-    )
-
-    const waitForPg = config.database?.enabled
-      ? [
-          `echo "Waiting for PostgreSQL..."`,
-          `for i in $(seq 1 30); do`,
-          `  pg_isready -h db -p 5432 -U plattr && break`,
-          `  sleep 1`,
-          `done`,
-          `echo "PostgreSQL is ready."`,
-        ]
-      : []
-
-    const script = [...waitForPg, ...socatLines, `echo "Infrastructure services ready."`, `sleep infinity`].join("\n")
-
-    return ctr.asService({ args: ["sh", "-c", script] })
-  }
-
-  /**
-   * Start a complete local development environment.
+   * Start a complete local development environment, or infrastructure only.
    *
    * Reads plattr.yaml, starts infrastructure services (PostgreSQL, MinIO,
    * PostgREST), and runs the framework-specific dev server with all services
    * bound and env vars set.
+   *
+   * When infraOnly is true, only the backing services are started (no app
+   * container). The app is expected to run natively on the host.
+   *
+   * Usage (infra only):
+   *   dagger call dev --source=. --infra-only up --ports=5432:5432,9000:9000,9001:9001,3001:3001,8080:8080
    */
   @func()
-  async dev(source: Directory, port: number = 3000): Promise<Service> {
+  async dev(source: Directory, port: number = 3000, infraOnly: boolean = false): Promise<Service> {
     const yamlContent = await source.file("plattr.yaml").contents()
     const config = parseConfig(yamlContent)
 
@@ -239,6 +150,60 @@ export class PlattrDev {
       for (const [key, value] of Object.entries(config.local.env)) {
         envVars[key] = value
       }
+    }
+
+    // --- Infra-only mode: return a lightweight proxy without the app ---
+    if (infraOnly) {
+      const portForwards: Array<{ local: number; host: string; remote: number }> = []
+
+      for (const { name } of services) {
+        switch (name) {
+          case "db":
+            portForwards.push({ local: 5432, host: name, remote: 5432 })
+            break
+          case "api":
+            portForwards.push({ local: 3001, host: name, remote: 3001 })
+            break
+          case "storage":
+            portForwards.push({ local: 9000, host: name, remote: 9000 })
+            portForwards.push({ local: 9001, host: name, remote: 9001 })
+            break
+          case "auth":
+            portForwards.push({ local: 8080, host: name, remote: 8080 })
+            break
+        }
+      }
+
+      let ctr = dag
+        .container()
+        .from("alpine:3.19")
+        .withExec(["apk", "add", "--no-cache", "socat", "postgresql-client"])
+
+      for (const { name, service } of services) {
+        ctr = ctr.withServiceBinding(name, service)
+      }
+      for (const pf of portForwards) {
+        ctr = ctr.withExposedPort(pf.local)
+      }
+
+      const socatLines = portForwards.map(
+        (pf) => `socat TCP-LISTEN:${pf.local},fork,reuseaddr TCP:${pf.host}:${pf.remote} &`,
+      )
+
+      const waitForPg = config.database?.enabled
+        ? [
+            `echo "Waiting for PostgreSQL..."`,
+            `for i in $(seq 1 30); do`,
+            `  pg_isready -h db -p 5432 -U plattr && break`,
+            `  sleep 1`,
+            `done`,
+            `echo "PostgreSQL is ready."`,
+          ]
+        : []
+
+      const script = [...waitForPg, ...socatLines, `echo "Infrastructure services ready."`, `sleep infinity`].join("\n")
+
+      return ctr.asService({ args: ["sh", "-c", script] })
     }
 
     return this.startDevServer(source, framework, envVars, services, appPort)
