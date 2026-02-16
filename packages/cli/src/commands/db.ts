@@ -1,21 +1,21 @@
-import { loadConfig } from '../lib/config';
+import { loadConfig, getDaggerModule } from '../lib/config';
 import { run } from '../lib/exec';
 
 export function dbMigrateCommand(engine?: string) {
   console.log('Running database migrations...\n');
   const engineArg = engine ? ` --engine=${engine}` : '';
-  run(`dagger call migrate --source=.${engineArg}`);
+  run(`dagger call --mod=${getDaggerModule()} migrate --source=.${engineArg}`);
 }
 
 export function dbShellCommand() {
   console.log('Opening database shell...\n');
-  run('dagger call db-shell --source=. terminal');
+  run(`dagger call --mod=${getDaggerModule()} db-shell --source=. terminal`);
 }
 
 export function dbSeedCommand(seedFile?: string) {
   const fileArg = seedFile ? ` --seed-file=${seedFile}` : '';
   console.log('Seeding database...\n');
-  run(`dagger call seed --source=.${fileArg}`);
+  run(`dagger call --mod=${getDaggerModule()} seed --source=.${fileArg}`);
 }
 
 export function dbConnectCommand(env: string, appName: string) {

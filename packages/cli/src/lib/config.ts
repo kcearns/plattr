@@ -1,6 +1,12 @@
 import { readFileSync, existsSync } from 'fs';
 import * as yaml from 'js-yaml';
 
+const DAGGER_MODULE = process.env.PLATTR_DAGGER_MODULE || 'github.com/kcearns/plattr/packages/dagger@main';
+
+export function getDaggerModule(): string {
+  return DAGGER_MODULE;
+}
+
 export interface AppConfig {
   name: string;
   framework?: string;

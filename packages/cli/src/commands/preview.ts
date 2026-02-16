@@ -1,10 +1,10 @@
-import { loadConfig } from '../lib/config';
+import { loadConfig, getDaggerModule } from '../lib/config';
 import { run, runQuiet } from '../lib/exec';
 
 export function previewCommand(prNumber: number, port: number = 3100) {
   const config = loadConfig();
   console.log(`Starting local preview for PR #${prNumber} on port ${port}...\n`);
-  run(`dagger call preview --source=. --pr-number=${prNumber} up --ports=${port}:${port}`);
+  run(`dagger call --mod=${getDaggerModule()} preview --source=. --pr-number=${prNumber} up --ports=${port}:${port}`);
 }
 
 export function previewListCommand() {
