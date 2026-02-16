@@ -6,8 +6,9 @@ This guide walks you through building, running, and deploying apps on Plattr. By
 
 - **Node.js** 18+ and npm
 - **Docker** (Docker Desktop or colima)
+- **Kind** — `go install sigs.k8s.io/kind@latest` or `brew install kind`
+- **kubectl** — `brew install kubectl` or [install guide](https://kubernetes.io/docs/tasks/tools/)
 - **Dagger CLI** — `curl -fsSL https://dl.dagger.io/dagger/install.sh | sh`
-- **kubectl** — connected to your cluster (for remote commands)
 - **Plattr CLI** — `npm install -g @plattr/cli`
 
 ## Creating a New App
@@ -63,22 +64,47 @@ See the full [plattr.yaml Reference](reference/plattr-yaml.md) for all options.
 plattr dev
 ```
 
-This starts your entire stack locally using Dagger:
+This sets up your entire infrastructure stack locally on a Kind (Kubernetes in Docker) cluster:
 
-| Service | Port | Description |
+1. Creates a Kind cluster and local container registry (first run only)
+2. Deploys infrastructure services as Kubernetes pods
+3. Starts port-forwards so services are accessible on localhost
+4. Writes environment variables to `.plattr/{appName}.env`
+
+**After `plattr dev` completes**, source the env file and start your dev server:
+
+```bash
+source .plattr/my-app.env
+npx next dev          # Next.js
+bin/rails server      # Rails
+npm run dev           # Generic
+```
+
+### Local Services
+
+| Service | Port | Condition |
 |---|---|---|
-| Your app | 3000 (configurable) | Hot-reload dev server |
-| PostgreSQL | 5432 | Database with your schema and roles |
-| PostgREST | 3001 | Auto-generated REST API from your database |
-| MinIO | 9000, 9001 | S3-compatible storage (9001 is the web console) |
-| Keycloak | 8080 | Auth provider with pre-configured realm |
+| PostgreSQL | 5432 | Always |
+| PostgREST | 3001 | `database.enabled: true` |
+| MinIO | 9000, 9001 | `storage.enabled: true` |
+| Keycloak | 8080 | `auth.enabled: true` |
 
 All services start only if enabled in `plattr.yaml`. A static site with no database won't start PostgreSQL.
 
-### Stopping Local Dev
+### Managing Infrastructure
 
 ```bash
-plattr down
+# Check infrastructure status
+plattr infra status
+
+# Stop infrastructure (data preserved, saves resources)
+plattr infra stop
+
+# Restart stopped infrastructure
+plattr infra start
+
+# Delete everything (cluster, registry, all data)
+plattr infra destroy
 ```
 
 ### Custom Port
@@ -87,36 +113,30 @@ plattr down
 plattr dev --port 4000
 ```
 
+### State Files
+
+`plattr dev` creates a `.plattr/` directory in your project with:
+- `{appName}.env` — environment variables you can `source`
+- `{appName}.pids` — port-forward process IDs (managed automatically)
+
+Add `.plattr/` to your `.gitignore`.
+
 ## Environment Variables
 
-Plattr automatically injects these env vars into your app:
+Plattr automatically provides these env vars in `.plattr/{appName}.env`:
 
 ### Database (when `database.enabled: true`)
 
 | Variable | Local Value | Description |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://my_app_app:localdev@db:5432/plattr?search_path=my_app` | Full connection string |
-| `DB_HOST` | `db` | Database hostname |
-| `DB_PORT` | `5432` | Database port |
-| `DB_NAME` | `plattr` | Database name |
-| `DB_USER` | `my_app_app` | App-specific role |
-| `DB_PASSWORD` | `localdev` | Password (random in production) |
-| `DB_SCHEMA` | `my_app` | PostgreSQL schema |
-
-### PostgREST (when `database.enabled: true`)
-
-| Variable | Local Value | Production Value |
-|---|---|---|
-| `POSTGREST_URL` | `http://api:3001` | `https://my-app.platform.company.dev/api/rest` |
-| `POSTGREST_INTERNAL_URL` | *(not set)* | `http://localhost:3001` |
-
-In production, `POSTGREST_INTERNAL_URL` connects directly to the PostgREST sidecar (same pod, no network hop). Use it for server-side calls. Use `POSTGREST_URL` for client-side/browser calls.
+| `DATABASE_URL` | `postgresql://plattr:localdev@127.0.0.1:5432/plattr?search_path=my_app` | Full connection string |
+| `POSTGREST_URL` | `http://127.0.0.1:3001` | PostgREST endpoint |
 
 ### Storage (when `storage.enabled: true`)
 
 | Variable | Local Value | Description |
 |---|---|---|
-| `S3_ENDPOINT` | `http://storage:9000` | S3 endpoint |
+| `S3_ENDPOINT` | `http://127.0.0.1:9000` | S3 endpoint |
 | `S3_ACCESS_KEY` | `minioadmin` | Access key |
 | `S3_SECRET_KEY` | `minioadmin` | Secret key |
 | `S3_REGION` | `us-east-1` | Region |
@@ -128,9 +148,45 @@ Bucket env var names are derived from the bucket name: `uploads` becomes `S3_BUC
 
 | Variable | Local Value | Description |
 |---|---|---|
-| `AUTH_ISSUER_URL` | `http://auth:8080/realms/my-app` | OIDC issuer URL |
-| `AUTH_CLIENT_ID` | `my-app` | OIDC client ID |
-| `AUTH_ADMIN_URL` | `http://auth:8080` | Keycloak admin URL |
+| `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/my-app` | OIDC issuer URL |
+| `AUTH_CLIENT_ID` | `my-app-app` | OIDC client ID |
+
+### Production Equivalents
+
+| Variable | Local Value | Production Value |
+|---|---|---|
+| `DATABASE_URL` | `postgresql://plattr:localdev@127.0.0.1:5432/...` | `postgresql://{app}_app:{random}@aurora:5432/...` |
+| `POSTGREST_URL` | `http://127.0.0.1:3001` | `https://{domain}/api/rest` |
+| `POSTGREST_INTERNAL_URL` | *(not set)* | `http://localhost:3001` |
+| `S3_ENDPOINT` | `http://127.0.0.1:9000` | *(AWS S3 default)* |
+| `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/{app}` | `https://auth.{baseDomain}/realms/{app}` |
+
+In production, `POSTGREST_INTERNAL_URL` connects directly to the PostgREST sidecar (same pod, no network hop). Use it for server-side calls. Use `POSTGREST_URL` for client-side/browser calls.
+
+## Testing
+
+### Local Tests
+
+```bash
+plattr test
+```
+
+Auto-detects your test runner and runs tests using the environment from `.plattr/{appName}.env`. Requires infrastructure to be running (`plattr dev` first).
+
+Supported test runners (auto-detected):
+- **Vitest** — `vitest.config.{ts,js,mts}`
+- **Jest** — `jest.config.{ts,js,mjs}`
+- **npm test** — `package.json` test script
+- **RSpec** — `spec/**/*.rb`
+- **Minitest** — `test/**/*.rb`
+
+### Ephemeral CI Tests
+
+```bash
+plattr test --ci
+```
+
+Runs Dagger-based tests with clean infrastructure (fresh database, fresh state). Use this in CI pipelines or when you want guaranteed clean state.
 
 ## Database Workflows
 
@@ -180,6 +236,14 @@ plattr db connect --env staging
 ```
 
 Retrieves the `DATABASE_URL` from the Kubernetes Secret and opens a `psql` session.
+
+### Reset Local Database
+
+```bash
+plattr db reset
+```
+
+Deletes the persistent volume and restarts PostgreSQL. Run `plattr dev` to recreate schemas.
 
 ### Schema and Roles
 
@@ -337,7 +401,33 @@ export const authOptions = {
 
 Providers listed in `plattr.yaml` (google, github, saml, oidc) are noted for configuration but require Plattr-level OAuth credentials set up by your platform team.
 
-## Deploying
+## Local Deploy Pipeline
+
+Test your production container locally before pushing to CI:
+
+```bash
+plattr deploy local
+```
+
+This runs a full pipeline:
+1. **Tests** — auto-detected test runner
+2. **Build** — production container image via Dagger
+3. **Push** — to the local registry (`localhost:5050`)
+4. **Security scan** — Trivy scans for HIGH/CRITICAL vulnerabilities
+5. **Deploy** — to the Kind cluster with port-forwarding
+
+```bash
+# Skip tests and scan for quick iteration
+plattr deploy local --skip-tests --skip-scan
+
+# Fail on vulnerabilities (CI-style)
+plattr deploy local --fail-on-scan
+
+# Remove the deployment
+plattr undeploy local
+```
+
+## Deploying to Production
 
 ### CI/CD Pipeline
 
@@ -355,7 +445,7 @@ Providers listed in `plattr.yaml` (google, github, saml, oidc) are noted for con
 plattr build
 
 # Run tests with full infrastructure
-plattr test
+plattr test --ci
 ```
 
 ### Environments
@@ -487,28 +577,38 @@ cd my-app
 plattr init
 # Choose: nextjs, enable database, enable storage, enable auth
 
-# 3. Start local development
+# 3. Start local infrastructure
 plattr dev
+
+# 4. Source env vars and start dev server
+source .plattr/my-app.env
+npx next dev
 # App on :3000, DB on :5432, Storage on :9000, Auth on :8080, REST API on :3001
 
-# 4. Create a migration (example with Prisma)
+# 5. Create a migration (example with Prisma)
 npx prisma init
 # Edit prisma/schema.prisma, then:
 npx prisma migrate dev --name init
 
-# 5. Grant PostgREST access to your tables
+# 6. Grant PostgREST access to your tables
 # In a migration file:
 # GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO my_app_anon;
 
-# 6. Test the REST API
+# 7. Test the REST API
 curl http://localhost:3001/todos
 
-# 7. Push to deploy
+# 8. Run tests
+plattr test
+
+# 9. Test production container locally
+plattr deploy local
+
+# 10. Push to deploy
 git add . && git commit -m "Initial app"
 git push origin main
 # CI builds, pushes image, operator deploys
 
-# 8. Check status
+# 11. Check status
 plattr status
 ```
 
@@ -529,13 +629,17 @@ plattr init
 #     adapter: postgresql
 #     url: <%= ENV['DATABASE_URL'] %>
 
-# 4. Start local development
+# 4. Start local infrastructure
 plattr dev
 
-# 5. Run migrations
+# 5. Source env vars and start dev server
+source .plattr/my-rails-app.env
+bin/rails server
+
+# 6. Run migrations
 plattr db migrate --engine raw
 
-# 6. Push to deploy
+# 7. Push to deploy
 git add . && git commit -m "Initial app"
 git push origin main
 ```

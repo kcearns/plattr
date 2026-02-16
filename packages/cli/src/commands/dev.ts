@@ -1,9 +1,263 @@
-import { spawn, ChildProcess } from 'child_process';
-import { loadConfig, getDaggerModule, AppConfig } from '../lib/config';
+import { spawn, execSync } from 'child_process';
+import { join } from 'path';
+import { existsSync } from 'fs';
+import { loadConfig, type AppConfig } from '../lib/config';
+import { getStateDir, killAllPids, appendPids, mergeEnvFile } from '../lib/state';
+
+const NAMESPACE = 'plattr-local';
+const CLUSTER_NAME = 'plattr';
+const REGISTRY_NAME = 'plattr-registry';
+const REGISTRY_PORT = 5050;
 
 /**
- * Build the environment variables map for the native dev server
- * based on which features are enabled in plattr.yaml.
+ * Resolve the path to the bundled local infrastructure manifests.
+ * Works from both dist/commands/ (compiled) and src/commands/ (tsx dev).
+ */
+function getManifestsPath(): string {
+  // Compiled: dist/commands/ -> dist/manifests/local
+  const compiled = join(__dirname, '..', 'manifests', 'local');
+  if (existsSync(compiled)) return compiled;
+
+  // Dev (tsx): src/commands/ -> ../../manifests/local (package root)
+  const dev = join(__dirname, '..', '..', 'manifests', 'local');
+  if (existsSync(dev)) return dev;
+
+  console.error('Could not find infrastructure manifests. Ensure manifests/local/ exists in the CLI package.');
+  process.exit(1);
+}
+
+/**
+ * Check if a CLI tool is available.
+ */
+function commandExists(cmd: string): boolean {
+  try {
+    execSync(`which ${cmd}`, { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if the Kind cluster exists.
+ */
+function clusterExists(): boolean {
+  try {
+    const clusters = execSync('kind get clusters', { encoding: 'utf-8', stdio: 'pipe' }).trim();
+    return clusters.split('\n').includes(CLUSTER_NAME);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a Docker container is running by name.
+ */
+function containerRunning(name: string): boolean {
+  try {
+    const state = execSync(`docker inspect -f '{{.State.Running}}' ${name}`, {
+      encoding: 'utf-8',
+      stdio: 'pipe',
+    }).trim();
+    return state === 'true';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Ensure the local container registry is running.
+ */
+function ensureRegistry(): void {
+  if (containerRunning(REGISTRY_NAME)) return;
+
+  // Container may exist but be stopped
+  try {
+    execSync(`docker start ${REGISTRY_NAME}`, { stdio: 'pipe' });
+    return;
+  } catch {
+    // Doesn't exist yet
+  }
+
+  console.log('Starting local container registry...');
+  execSync(
+    `docker run -d --name ${REGISTRY_NAME} --restart always -p ${REGISTRY_PORT}:5000 registry:2`,
+    { stdio: 'inherit' },
+  );
+}
+
+/**
+ * Connect the registry to the Kind network and configure containerd
+ * on each node to resolve localhost:REGISTRY_PORT via the registry container.
+ */
+function connectRegistryToKind(): void {
+  // Connect registry container to the Kind Docker network
+  execSync(`docker network connect kind ${REGISTRY_NAME} 2>/dev/null || true`, { stdio: 'pipe' });
+
+  // Configure containerd on each node to use the registry
+  const nodes = execSync(`kind get nodes --name ${CLUSTER_NAME}`, {
+    encoding: 'utf-8',
+    stdio: 'pipe',
+  }).trim().split('\n').filter(Boolean);
+
+  const registryDir = `/etc/containerd/certs.d/localhost:${REGISTRY_PORT}`;
+  const hostsToml = `[host."http://${REGISTRY_NAME}:5000"]`;
+
+  for (const node of nodes) {
+    execSync(`docker exec ${node} mkdir -p ${registryDir}`, { stdio: 'pipe' });
+    execSync(`docker exec -i ${node} sh -c 'cat > ${registryDir}/hosts.toml' <<'EOF'\n${hostsToml}\nEOF`, { stdio: 'pipe' });
+    execSync(`docker exec ${node} systemctl restart containerd`, { stdio: 'pipe' });
+  }
+
+  // Wait briefly for containerd to restart and kubelet to reconnect
+  execSync('sleep 3');
+
+  // Apply the registry ConfigMap so K8s tooling knows about it
+  const configMap = `apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHost: "localhost:${REGISTRY_PORT}"`;
+
+  execSync(`cat <<'EOF' | kubectl apply -f -\n${configMap}\nEOF`, { stdio: 'pipe' });
+}
+
+/**
+ * Ensure the Kind cluster is created and kubectl context is set.
+ */
+function ensureCluster(): void {
+  if (!commandExists('kind')) {
+    console.error('Kind is required for local development. Install: https://kind.sigs.k8s.io/docs/user/quick-start/#installation');
+    process.exit(1);
+  }
+
+  if (!commandExists('kubectl')) {
+    console.error('kubectl is required for local development. Install: https://kubernetes.io/docs/tasks/tools/');
+    process.exit(1);
+  }
+
+  // Ensure registry is running before creating the cluster
+  ensureRegistry();
+
+  if (!clusterExists()) {
+    console.log('Creating local Plattr cluster...');
+    execSync(`kind create cluster --name ${CLUSTER_NAME}`, { stdio: 'inherit' });
+
+    // Connect registry to Kind and configure containerd on nodes
+    connectRegistryToKind();
+  }
+
+  // Ensure kubectl context is set
+  execSync(`kubectl cluster-info --context kind-${CLUSTER_NAME}`, { stdio: 'pipe' });
+}
+
+/**
+ * Apply infrastructure manifests selectively based on config.
+ * Namespace is always created first, then only enabled services are applied.
+ */
+function applyManifests(config: AppConfig): void {
+  const manifestsPath = getManifestsPath();
+
+  // Ensure namespace exists first
+  execSync(
+    `kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -`,
+    { stdio: 'inherit' },
+  );
+
+  // Always apply postgres
+  execSync(`kubectl apply -f ${manifestsPath}/postgres.yaml`, { stdio: 'inherit' });
+
+  // Conditionally apply optional services
+  if (config.database?.enabled) {
+    execSync(`kubectl apply -f ${manifestsPath}/postgrest.yaml`, { stdio: 'inherit' });
+  }
+  if (config.storage?.enabled) {
+    execSync(`kubectl apply -f ${manifestsPath}/minio.yaml`, { stdio: 'inherit' });
+  }
+  if (config.auth?.enabled) {
+    execSync(`kubectl apply -f ${manifestsPath}/keycloak.yaml`, { stdio: 'inherit' });
+  }
+}
+
+/**
+ * Wait for a deployment to be ready.
+ */
+function waitForDeployment(name: string, timeoutSeconds = 60): void {
+  console.log(`  Waiting for ${name}...`);
+  execSync(
+    `kubectl rollout status deployment/${name} -n ${NAMESPACE} --timeout=${timeoutSeconds}s`,
+    { stdio: 'inherit' },
+  );
+}
+
+/**
+ * Patch PostgREST env vars for the app's schema and anon role.
+ */
+function patchPostgrest(schemaName: string, anonRole: string): void {
+  execSync(
+    `kubectl set env deployment/plattr-postgrest -n ${NAMESPACE} PGRST_DB_SCHEMAS=${schemaName} PGRST_DB_ANON_ROLE=${anonRole}`,
+    { stdio: 'pipe' },
+  );
+}
+
+/**
+ * Create the app schema if it doesn't exist.
+ */
+function ensureSchema(schemaName: string): void {
+  execSync(
+    `kubectl exec deploy/plattr-pg -n ${NAMESPACE} -- psql -U plattr -c "CREATE SCHEMA IF NOT EXISTS ${schemaName}"`,
+    { stdio: 'pipe' },
+  );
+}
+
+/**
+ * Create the PostgREST anon role and grant schema usage.
+ */
+function ensureAnonRole(appName: string, schemaName: string): void {
+  const anonRole = `${appName.replace(/-/g, '_')}_anon`;
+
+  // Check if role exists (returns empty string if not)
+  const result = execSync(
+    `kubectl exec deploy/plattr-pg -n ${NAMESPACE} -- psql -U plattr -c "SELECT 1 FROM pg_roles WHERE rolname = '${anonRole}'" -tA`,
+    { encoding: 'utf-8', stdio: 'pipe' },
+  ).trim();
+
+  if (!result) {
+    execSync(
+      `kubectl exec deploy/plattr-pg -n ${NAMESPACE} -- psql -U plattr -c "CREATE ROLE ${anonRole} NOLOGIN"`,
+      { stdio: 'pipe' },
+    );
+  }
+
+  execSync(
+    `kubectl exec deploy/plattr-pg -n ${NAMESPACE} -- psql -U plattr -c "GRANT USAGE ON SCHEMA ${schemaName} TO ${anonRole}"`,
+    { stdio: 'pipe' },
+  );
+}
+
+/**
+ * Create MinIO buckets for each bucket in config.
+ */
+function ensureBuckets(appName: string, buckets: Array<{ name: string; public: boolean }>): void {
+  // Set up mc alias
+  execSync(
+    `kubectl exec deploy/plattr-minio -n ${NAMESPACE} -- mc alias set local http://localhost:9000 minioadmin minioadmin`,
+    { stdio: 'pipe' },
+  );
+
+  for (const bucket of buckets) {
+    const bucketName = `${appName}-${bucket.name}`;
+    execSync(
+      `kubectl exec deploy/plattr-minio -n ${NAMESPACE} -- mc mb --ignore-existing local/${bucketName}`,
+      { stdio: 'pipe' },
+    );
+  }
+}
+
+/**
+ * Build environment variables for localhost dev.
  */
 function buildEnvVars(config: AppConfig): Record<string, string> {
   const appName = config.name;
@@ -44,159 +298,165 @@ function buildEnvVars(config: AppConfig): Record<string, string> {
 }
 
 /**
- * Detect the framework dev command from plattr.yaml config.
+ * Start kubectl port-forward processes detached from the parent.
+ * Returns the PIDs so they can be written to a file.
  */
-function getDevCommand(config: AppConfig, port: number): { cmd: string; args: string[] } {
-  const framework = config.framework || 'nextjs';
+function startPortForwards(config: AppConfig): number[] {
+  const pids: number[] = [];
 
-  switch (framework) {
-    case 'nextjs':
-      return { cmd: 'npx', args: ['next', 'dev', '--port', String(port)] };
-    case 'rails':
-      return { cmd: 'bin/rails', args: ['server', '-p', String(port)] };
-    default:
-      return { cmd: 'npx', args: ['next', 'dev', '--port', String(port)] };
+  const forward = (svc: string, ports: string) => {
+    const proc = spawn('kubectl', ['port-forward', `svc/${svc}`, ports, '-n', NAMESPACE], {
+      stdio: 'ignore',
+      detached: true,
+    });
+    proc.unref();
+    if (proc.pid) pids.push(proc.pid);
+  };
+
+  // Always forward Postgres
+  forward('plattr-pg', '5432:5432');
+
+  if (config.database?.enabled) {
+    forward('plattr-postgrest', '3001:3001');
   }
+
+  if (config.storage?.enabled) {
+    forward('plattr-minio', '9000:9000');
+    forward('plattr-minio-console', '9001:9001');
+  }
+
+  if (config.auth?.enabled) {
+    forward('plattr-keycloak', '8080:8080');
+  }
+
+  return pids;
 }
 
 /**
- * Compute the port list for `dagger ... up --ports=...` based on enabled features.
+ * Print service URLs.
  */
-function getServicePorts(config: AppConfig): string {
-  const ports: string[] = [];
+function printServiceUrls(config: AppConfig): void {
+  const schemaName = config.database?.schemaName || config.name.replace(/-/g, '_');
+
+  console.log('\n  Service URLs:');
+  console.log(`    PostgreSQL: postgresql://plattr:localdev@127.0.0.1:5432/plattr (schema: ${schemaName})`);
 
   if (config.database?.enabled) {
-    ports.push('5432:5432'); // Postgres
-    ports.push('3001:3001'); // PostgREST
+    console.log(`    PostgREST:  http://127.0.0.1:3001`);
   }
   if (config.storage?.enabled) {
-    ports.push('9000:9000'); // MinIO S3
-    ports.push('9001:9001'); // MinIO Console
+    console.log(`    MinIO S3:   http://127.0.0.1:9000`);
+    console.log(`    MinIO UI:   http://127.0.0.1:9001`);
   }
   if (config.auth?.enabled) {
-    ports.push('8080:8080'); // Keycloak
+    console.log(`    Keycloak:   http://127.0.0.1:8080`);
   }
-
-  return ports.join(',');
 }
 
 export function devCommand(port?: number) {
   const config = loadConfig();
   const appPort = port || config.local?.port || 3000;
   const framework = config.framework || 'nextjs';
+  const appName = config.name;
+  const schemaName = config.database?.schemaName || appName.replace(/-/g, '_');
+  const anonRole = `${appName.replace(/-/g, '_')}_anon`;
 
-  console.log(`Starting local dev environment for "${config.name}"...`);
-  console.log(`Framework: ${framework} | App port: ${appPort}`);
+  // Ensure .plattr state directory exists
+  getStateDir();
 
-  const servicePorts = getServicePorts(config);
-  if (!servicePorts) {
-    console.log('No infrastructure services enabled — starting app only.\n');
-    startApp(config, appPort, {});
-    return;
+  console.log(`Starting local dev environment for "${appName}"...`);
+  console.log(`Framework: ${framework}`);
+
+  // 1. Ensure Kind cluster
+  ensureCluster();
+
+  // 2. Apply infrastructure manifests (only enabled services)
+  console.log('\nApplying infrastructure manifests...');
+  applyManifests(config);
+
+  // 3. Wait for Postgres
+  console.log('\nWaiting for infrastructure...');
+  waitForDeployment('plattr-pg');
+
+  // Wait for Postgres to actually accept connections
+  console.log('  Waiting for Postgres to accept connections...');
+  let ready = false;
+  for (let i = 0; i < 15; i++) {
+    try {
+      execSync(`kubectl exec deploy/plattr-pg -n ${NAMESPACE} -- pg_isready -U plattr`, { stdio: 'ignore' });
+      ready = true;
+      break;
+    } catch {
+      execSync('sleep 2');
+    }
+  }
+  if (!ready) {
+    throw new Error('Postgres failed to start after 30 seconds');
   }
 
-  console.log(`Infrastructure services starting in background...\n`);
+  // Wait for other enabled services
+  if (config.database?.enabled) {
+    // Set up schema and role before PostgREST starts
+    console.log('\n  Setting up database...');
+    ensureSchema(schemaName);
+    ensureAnonRole(appName, schemaName);
 
-  // Start Dagger services in the background
-  const daggerArgs = [
-    'call',
-    `--mod=${getDaggerModule()}`,
-    'dev',
-    '--source=.',
-    '--infra-only',
-    'up',
-    `--ports=${servicePorts}`,
-  ];
-
-  const daggerProc = spawn('dagger', daggerArgs, {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    cwd: process.cwd(),
-  });
-
-  let daggerReady = false;
-  let appProc: ChildProcess | null = null;
-
-  // Cleanup function
-  const cleanup = () => {
-    console.log('\n[PLATTR] Shutting down...');
-    if (appProc && !appProc.killed) {
-      appProc.kill('SIGTERM');
-    }
-    if (daggerProc && !daggerProc.killed) {
-      daggerProc.kill('SIGTERM');
-    }
-    // Give processes a moment to exit, then force kill
-    setTimeout(() => {
-      if (appProc && !appProc.killed) appProc.kill('SIGKILL');
-      if (daggerProc && !daggerProc.killed) daggerProc.kill('SIGKILL');
-      process.exit(0);
-    }, 3000);
-  };
-
-  process.on('SIGINT', cleanup);
-  process.on('SIGTERM', cleanup);
-
-  // Watch Dagger stdout/stderr for readiness
-  let daggerOutput = '';
-
-  const checkReady = (data: Buffer) => {
-    const text = data.toString();
-    daggerOutput += text;
-
-    // Dagger `up` prints port mappings when services are ready
-    if (!daggerReady && daggerOutput.includes('Infrastructure services ready')) {
-      daggerReady = true;
-      console.log('[PLATTR] Infrastructure services are ready.');
-      // Give a brief moment for port forwarding to stabilize
-      setTimeout(() => {
-        const envVars = buildEnvVars(config);
-        startApp(config, appPort, envVars);
-      }, 1000);
-    }
-  };
-
-  if (daggerProc.stdout) daggerProc.stdout.on('data', checkReady);
-  if (daggerProc.stderr) {
-    daggerProc.stderr.on('data', (data: Buffer) => {
-      const text = data.toString();
-      // Pass through Dagger progress to stderr
-      process.stderr.write(text);
-      // Also check stderr for readiness signals
-      checkReady(data);
-    });
+    // Patch PostgREST with app-specific config and wait
+    patchPostgrest(schemaName, anonRole);
+    waitForDeployment('plattr-postgrest');
   }
 
-  daggerProc.on('exit', (code) => {
-    if (!daggerReady) {
-      console.error(`[PLATTR] Dagger services failed to start (exit code ${code}).`);
-      process.exit(1);
+  if (config.storage?.enabled) {
+    waitForDeployment('plattr-minio');
+
+    // Create buckets
+    const buckets = config.storage.buckets || [];
+    if (buckets.length > 0) {
+      console.log('\n  Creating storage buckets...');
+      ensureBuckets(appName, buckets);
     }
-  });
-
-  function startApp(cfg: AppConfig, appPort: number, envVars: Record<string, string>) {
-    const { cmd, args } = getDevCommand(cfg, appPort);
-    const env = { ...process.env, ...envVars };
-
-    console.log(`[PLATTR] Starting ${framework} dev server on port ${appPort}...`);
-
-    // Print env vars being injected
-    const envKeys = Object.keys(envVars);
-    if (envKeys.length > 0) {
-      console.log(`[PLATTR] Environment: ${envKeys.join(', ')}\n`);
-    }
-
-    appProc = spawn(cmd, args, {
-      stdio: 'inherit',
-      cwd: process.cwd(),
-      env,
-    });
-
-    appProc.on('exit', (code) => {
-      console.log(`[PLATTR] Dev server exited (code ${code}).`);
-      if (daggerProc && !daggerProc.killed) {
-        daggerProc.kill('SIGTERM');
-      }
-      process.exit(code || 0);
-    });
   }
+
+  if (config.auth?.enabled) {
+    waitForDeployment('plattr-keycloak', 120);
+  }
+
+  console.log('\n[PLATTR] Infrastructure is ready.');
+
+  // 4. Kill any leftover port-forwards from a previous run
+  killAllPids(appName);
+
+  // 5. Start detached port-forwards
+  const pids = startPortForwards(config);
+
+  // Write PIDs so "plattr infra stop" can clean them up
+  appendPids(appName, pids);
+
+  // Brief pause for port-forwards to bind
+  execSync('sleep 1');
+
+  // 6. Build env vars
+  const envVars = buildEnvVars(config);
+
+  // 7. Merge env vars into env file for easy sourcing
+  mergeEnvFile(appName, envVars);
+
+  // 8. Print service URLs
+  printServiceUrls(config);
+
+  // 9. Print export commands
+  console.log('\n  Run these in your terminal:\n');
+  for (const [key, value] of Object.entries(envVars)) {
+    console.log(`    export ${key}="${value}"`);
+  }
+
+  console.log(`\n  Or source all at once: source .plattr/${appName}.env`);
+
+  // 10. Print dev server hints
+  console.log('\n  Then start your dev server:');
+  console.log('    npx next dev        # Next.js');
+  console.log('    bin/rails server    # Rails');
+
+  console.log(`\n  Tip: Run plattr deploy local to test the production container in your local cluster.`);
+  console.log('  Run plattr infra stop to stop port-forwards and save resources.\n');
 }

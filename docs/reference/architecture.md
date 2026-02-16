@@ -7,17 +7,18 @@ This document covers the internal architecture of Plattr: how reconciliation wor
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │   CLI        │     │   Dagger     │     │   CDK        │
-│  (developer  │     │  (local dev  │     │  (infra      │
-│   commands)  │     │   pipeline)  │     │   stacks)    │
+│  (developer  │     │  (build &    │     │  (infra      │
+│   commands)  │     │   CI tests)  │     │   stacks)    │
 └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
        │                    │                    │
-       │  kubectl apply     │  containers        │  CloudFormation
+       │  kubectl/kind      │  build images      │  CloudFormation
        v                    v                    v
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │  Kubernetes  │     │  Docker      │     │  AWS         │
-│  API Server  │     │  (local)     │     │  (EKS, RDS,  │
-└──────┬───────┘     └──────────────┘     │   S3, etc.)  │
-       │                                  └──────────────┘
+│  (Kind local │     │  (registry   │     │  (EKS, RDS,  │
+│   or EKS)    │     │   :5050)     │     │   S3, etc.)  │
+└──────┬───────┘     └──────────────┘     └──────────────┘
+       │
        │  watch events
        v
 ┌──────────────────────────────────────────────────┐
@@ -280,33 +281,36 @@ Plattr ensures that code written for local development works in production witho
 
 ### Environment Variable Parity
 
-| Variable | Local (Dagger) | Remote (Operator) |
+| Variable | Local (Kind) | Remote (Operator) |
 |---|---|---|
-| `DATABASE_URL` | `postgresql://{app}_app:localdev@db:5432/plattr?search_path={schema}` | `postgresql://{app}_app:{random}@aurora:5432/plattr?search_path={env}_{schema}` |
-| `POSTGREST_URL` | `http://api:3001` | `https://{domain}/api/rest` |
+| `DATABASE_URL` | `postgresql://plattr:localdev@127.0.0.1:5432/plattr?search_path={schema}` | `postgresql://{app}_app:{random}@aurora:5432/plattr?search_path={env}_{schema}` |
+| `POSTGREST_URL` | `http://127.0.0.1:3001` | `https://{domain}/api/rest` |
 | `POSTGREST_INTERNAL_URL` | *(not set)* | `http://localhost:3001` |
-| `S3_ENDPOINT` | `http://storage:9000` | *(AWS S3 default)* |
+| `S3_ENDPOINT` | `http://127.0.0.1:9000` | *(AWS S3 default)* |
 | `S3_BUCKET_*` | `{app}-{bucket}` | `plattr-{env}-{app}-{bucket}` |
-| `AUTH_ISSUER_URL` | `http://auth:8080/realms/{app}` | `https://auth.{baseDomain}/realms/{app}` |
-| `AUTH_CLIENT_ID` | `{app}` | `{app}` |
+| `AUTH_ISSUER_URL` | `http://127.0.0.1:8080/realms/{app}` | `https://auth.{baseDomain}/realms/{app}` |
+| `AUTH_CLIENT_ID` | `{app}-app` | `{app}` |
 
 ### Service Parity
 
 | Service | Local | Remote |
 |---|---|---|
-| PostgreSQL | Container (postgres:14-alpine) | Aurora PostgreSQL |
-| Object Storage | MinIO container | AWS S3 |
-| Authentication | Keycloak container (dev mode) | Keycloak on EKS (HA) |
-| REST API | PostgREST container | PostgREST sidecar |
-| App Server | Hot-reload dev server | Production build in container |
+| PostgreSQL | Pod in Kind cluster (port-forwarded to :5432) | Aurora PostgreSQL |
+| Object Storage | MinIO pod (port-forwarded to :9000) | AWS S3 |
+| Authentication | Keycloak pod (port-forwarded to :8080) | Keycloak on EKS (HA) |
+| REST API | PostgREST pod (port-forwarded to :3001) | PostgREST sidecar |
+| App Server | Native dev server (run manually) | Production build in container |
+| Container Registry | Local registry on :5050 | ECR |
 
 ### What Differs
 
 - **TLS**: Local uses HTTP, remote uses HTTPS (cert-manager + Let's Encrypt)
-- **DNS**: Local uses `localhost`, remote uses real domains (external-dns + Route 53)
+- **DNS**: Local uses `localhost` via port-forwards, remote uses real domains (external-dns + Route 53)
 - **Scaling**: Local is single-instance, remote uses HPA
 - **Storage credentials**: Local uses MinIO defaults, remote uses IRSA
 - **Database passwords**: Local uses `localdev`, remote uses random 32-byte hex
+- **Dev server**: Local runs natively (you start it), remote runs as a container
+- **Registry**: Local uses `localhost:5050`, remote uses ECR
 
 ## Preview Environment Architecture
 

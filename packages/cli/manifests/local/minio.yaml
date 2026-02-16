@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plattr-minio-data
+  namespace: plattr-local
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plattr-minio
+  namespace: plattr-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plattr-minio
+  template:
+    metadata:
+      labels:
+        app: plattr-minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio:latest
+          command: ["minio", "server", "/data", "--console-address", ":9001"]
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          env:
+            - name: MINIO_ROOT_USER
+              value: minioadmin
+            - name: MINIO_ROOT_PASSWORD
+              value: minioadmin
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: plattr-minio-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plattr-minio
+  namespace: plattr-local
+spec:
+  selector:
+    app: plattr-minio
+  ports:
+    - port: 9000
+      targetPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plattr-minio-console
+  namespace: plattr-local
+spec:
+  selector:
+    app: plattr-minio
+  ports:
+    - port: 9001
+      targetPort: 9001

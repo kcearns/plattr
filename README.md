@@ -6,14 +6,15 @@ An internal developer platform that gives teams a Vercel-like experience on top 
 
 ## What You Get
 
-| Capability | Local (`plattrdev`) | Production (EKS) |
+| Capability | Local (`plattr dev`) | Production (EKS) |
 |---|---|---|
-| **App server** | Hot-reload on :3000 | Deployment + Ingress with TLS |
-| **PostgreSQL** | Container on :5432 | Aurora (provisioned per-app schema) |
+| **Infrastructure** | Kind cluster with port-forwards | EKS with Ingress + TLS |
+| **PostgreSQL** | Pod on :5432 | Aurora (provisioned per-app schema) |
 | **Object storage** | MinIO on :9000 | S3 buckets |
 | **Auth (Keycloak)** | Dev instance on :8080 | Managed Keycloak on EKS |
 | **REST API (PostgREST)** | Auto-generated on :3001 | Sidecar in app pod, routed via `/api/rest` |
-| **Preview environments** | `plattrpreview start --pr 42` | Auto-created from PRs, TTL-based cleanup |
+| **Local deploy** | `plattr deploy local` (test, build, scan, deploy) | CI/CD via GitHub Actions |
+| **Preview environments** | `plattr preview start --pr 42` | Auto-created from PRs, TTL-based cleanup |
 
 ## Architecture
 
@@ -40,9 +41,9 @@ An internal developer platform that gives teams a Vercel-like experience on top 
 
 **Operator** — Kubernetes controller that reconciles `Application` and `PreviewEnvironment` CRDs into real infrastructure (database schemas, S3 buckets, Keycloak realms, Deployments, Services, Ingresses).
 
-**Dagger** — Local development pipeline. Reads `plattr.yaml` and spins up matching infrastructure in containers with hot-reload.
+**Dagger** — Build and CI pipeline. Builds production container images and runs ephemeral tests.
 
-**CLI** — Developer-facing tool (`plattrinit`, `plattrdev`, `plattrstatus`, etc.).
+**CLI** — Developer-facing tool (`plattr init`, `plattr dev`, `plattr deploy local`, `plattr test`, etc.).
 
 **CDK** — AWS infrastructure stacks (EKS cluster config, IRSA roles, CI/CD pipelines, add-ons).
 
@@ -51,7 +52,7 @@ An internal developer platform that gives teams a Vercel-like experience on top 
 ```
 packages/
   operator/     Kubernetes operator (TypeScript, @kubernetes/client-node)
-  dagger/       Local dev pipeline (Dagger module)
+  dagger/       Build & CI pipeline (Dagger module)
   cli/          Developer CLI (Commander.js)
   cdk/          AWS CDK stacks
   shared/       Shared types, SQL generators, config parser
@@ -74,8 +75,18 @@ npm install -g @plattr/cli
 # Initialize a new app
 plattr init
 
-# Start local development (database, storage, auth, REST API all included)
+# Start local infrastructure (Kind cluster, database, storage, auth)
 plattr dev
+
+# Source env vars and start your dev server
+source .plattr/my-app.env
+npx next dev
+
+# Run tests
+plattr test
+
+# Build, scan, and deploy to local cluster
+plattr deploy local
 
 # Check status of a deployed app
 plattr status

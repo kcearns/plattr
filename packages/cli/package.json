@@ -8,7 +8,7 @@
     "plattr": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r manifests dist/",
     "clean": "rm -rf dist"
   },
   "dependencies": {

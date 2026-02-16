@@ -20,8 +20,8 @@ All 13 stages of development are complete.
 ```
 packages/
   operator/     K8s operator — reconciles Application/PreviewEnvironment CRDs
-  dagger/       Local dev pipeline — starts DB, storage, auth, PostgREST containers
-  cli/          Developer CLI — plattr init/dev/status/logs/db/env commands
+  dagger/       Build & CI pipeline — production images, ephemeral tests
+  cli/          Developer CLI — plattr dev/deploy/test/infra/db/env commands
   cdk/          AWS CDK stacks — EKS operator stack, CI/CD stack
   shared/       Shared types, SQL generators, config parser
 examples/
@@ -40,10 +40,29 @@ manifests/
 - **Environment prefixing**: `prod_`, `staging_`, `uat_` for DB schemas/roles; preview uses PR-suffixed names
 - **Build system**: Turbo monorepo with npm workspaces
 
-## Running Locally
+## Local Development (CLI)
 
 ```bash
-# Start the operator (needs Kind cluster, PostgreSQL, LocalStack)
+# Start local infrastructure (Kind cluster, DB, storage, auth)
+plattr dev
+
+# Source env vars and start your dev server
+source .plattr/{appName}.env
+npx next dev
+
+# Run tests (auto-detects vitest/jest/rspec/minitest)
+plattr test
+
+# Build, scan, and deploy to local Kind cluster
+plattr deploy local
+
+# Manage infrastructure: status, stop, start, destroy
+plattr infra status
+```
+
+## Running the Operator Locally
+
+```bash
 cd packages/operator
 DB_ADMIN_URL=postgresql://... BASE_DOMAIN=localhost KEYCLOAK_URL=http://localhost:8080 npx tsx src/index.ts
 

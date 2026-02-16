@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plattr-keycloak
+  namespace: plattr-local
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plattr-keycloak
+  template:
+    metadata:
+      labels:
+        app: plattr-keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: quay.io/keycloak/keycloak:26.0
+          command: ["/opt/keycloak/bin/kc.sh", "start-dev"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KC_BOOTSTRAP_ADMIN_USERNAME
+              value: admin
+            - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+              value: admin
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+          resources:
+            requests:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plattr-keycloak
+  namespace: plattr-local
+spec:
+  selector:
+    app: plattr-keycloak
+  ports:
+    - port: 8080
+      targetPort: 8080

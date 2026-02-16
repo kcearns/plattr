@@ -27,7 +27,7 @@ Interactive prompts:
 
 ### `plattr dev`
 
-Start the local development environment with all configured services.
+Set up local infrastructure and prepare the environment for development.
 
 ```bash
 plattr dev [options]
@@ -35,35 +35,75 @@ plattr dev [options]
 
 | Option | Description | Default |
 |---|---|---|
-| `-p, --port <port>` | Port for the app dev server | `3000` (or `local.port` from config) |
+| `-p, --port <port>` | Port hint (reserved for future use) | `3000` (or `local.port` from config) |
+
+**What it does:**
+
+1. Creates a local Kind cluster (if not already running)
+2. Starts a local container registry on port 5050
+3. Applies Kubernetes manifests for enabled services (PostgreSQL, PostgREST, MinIO, Keycloak)
+4. Waits for all services to be ready
+5. Sets up database schema and roles
+6. Creates storage buckets
+7. Starts detached `kubectl port-forward` processes
+8. Writes environment variables to `.plattr/{appName}.env`
+9. Prints export commands and service URLs
+
+**Important:** `plattr dev` does **not** start your application's dev server. After it completes, source the env file and start your dev server manually:
+
+```bash
+plattr dev
+source .plattr/my-app.env
+npx next dev          # Next.js
+bin/rails server      # Rails
+```
 
 **Services started** (conditional on `plattr.yaml`):
 
 | Service | Port | Condition |
 |---|---|---|
-| App (hot-reload) | `--port` value | Always |
-| PostgreSQL | 5432 | `database.enabled: true` |
+| PostgreSQL | 5432 | Always |
 | PostgREST | 3001 | `database.enabled: true` |
 | MinIO | 9000, 9001 | `storage.enabled: true` |
 | Keycloak | 8080 | `auth.enabled: true` |
 
-**Example:**
-```bash
-plattr dev
-plattr dev --port 4000
-```
+**State files** (in `.plattr/` directory):
+- `{appName}.env` — environment variables (sourceable)
+- `{appName}.pids` — port-forward process IDs
 
 ---
 
-### `plattr down`
+### `plattr test`
 
-Stop the local development environment.
+Run tests against local infrastructure.
 
 ```bash
-plattr down
+plattr test [options]
 ```
 
-Sends SIGTERM to the running Dagger process. Checks `~/.plattr/dev.pid` first, falls back to finding orphaned `dagger call dev` processes.
+| Option | Description | Default |
+|---|---|---|
+| `--ci` | Run Dagger-based ephemeral tests (clean state) | `false` |
+
+**Without `--ci`** (default): Auto-detects the test runner and runs tests locally using the environment from `.plattr/{appName}.env`. Checks that infrastructure is running before starting.
+
+Supported test runners (auto-detected):
+- **Vitest** — detects `vitest.config.{ts,js,mts}`
+- **Jest** — detects `jest.config.{ts,js,mjs}`
+- **npm test** — uses `package.json` test script (if it exists and isn't the default)
+- **RSpec** — detects `spec/**/*.rb` (Rails)
+- **Minitest** — detects `test/**/*.rb` (Rails)
+
+**With `--ci`**: Runs `dagger call test --source=.` for fully ephemeral tests with clean database state.
+
+**Example:**
+```bash
+# Run local tests (requires plattr dev running)
+plattr test
+
+# Run ephemeral tests via Dagger
+plattr test --ci
+```
 
 ---
 
@@ -79,15 +119,101 @@ Runs `dagger call build --source=.` to produce an optimized production image bas
 
 ---
 
-### `plattr test`
+### `plattr deploy local`
 
-Run tests with full infrastructure (database, storage if configured).
+Build, test, scan, and deploy the app to the local Kind cluster.
 
 ```bash
-plattr test
+plattr deploy local [options]
 ```
 
-Runs `dagger call test --source=.`. Starts real PostgreSQL and MinIO instances for integration testing.
+| Option | Description | Default |
+|---|---|---|
+| `-p, --port <port>` | Port for the deployed app | `3000` (or `local.port` from config) |
+| `--skip-tests` | Skip the test step | `false` |
+| `--skip-scan` | Skip the Trivy security scan | `false` |
+| `--fail-on-scan` | Exit with error if vulnerabilities found (no prompt) | `false` |
+
+**Pipeline steps:**
+
+1. **Tests** — Auto-detects and runs tests (skippable with `--skip-tests`)
+2. **Build** — Builds production image via Dagger
+3. **Push** — Pushes image to local registry (`localhost:5050`)
+4. **Security Scan** — Runs Trivy scan for HIGH/CRITICAL vulnerabilities (skippable with `--skip-scan`)
+5. **Deploy** — Applies Kubernetes manifests (ConfigMap, Deployment, Service) and waits for rollout
+6. **Port-forward** — Starts a detached port-forward to the deployed app
+
+**Example:**
+```bash
+# Full pipeline
+plattr deploy local
+
+# Quick deploy (skip tests and scan)
+plattr deploy local --skip-tests --skip-scan
+
+# CI-style (fail on vulnerabilities)
+plattr deploy local --fail-on-scan
+```
+
+---
+
+### `plattr undeploy local`
+
+Remove the app deployment from the local Kind cluster.
+
+```bash
+plattr undeploy local
+```
+
+Kills tracked port-forward processes and deletes the Deployment, Service, and ConfigMap from the cluster. Does **not** remove the infrastructure (PostgreSQL, MinIO, etc.) — use `plattr infra destroy` for that.
+
+---
+
+### `plattr infra status`
+
+Show local infrastructure status.
+
+```bash
+plattr infra status
+```
+
+Displays all pods in the `plattr-local` namespace.
+
+---
+
+### `plattr infra stop`
+
+Stop local infrastructure (data preserved).
+
+```bash
+plattr infra stop
+```
+
+Kills port-forward processes and scales all deployments to zero replicas. Data in persistent volumes is preserved. Run `plattr dev` to restart.
+
+---
+
+### `plattr infra start`
+
+Start local infrastructure.
+
+```bash
+plattr infra start
+```
+
+Scales all deployments back to one replica. Use this after `plattr infra stop` to resume without a full `plattr dev` cycle.
+
+---
+
+### `plattr infra destroy`
+
+Delete local cluster and all data.
+
+```bash
+plattr infra destroy
+```
+
+Kills port-forward processes, clears all state files (`.plattr/`), deletes the Kind cluster, and removes the local container registry. All data is lost. Run `plattr dev` to recreate from scratch.
 
 ---
 
@@ -185,8 +311,6 @@ Open an interactive `psql` shell connected to the local database.
 plattr db shell
 ```
 
-Runs `dagger call db-shell --source=. terminal`.
-
 ---
 
 ### `plattr db connect`
@@ -211,6 +335,18 @@ plattr db connect --env staging
 
 ---
 
+### `plattr db reset`
+
+Reset the local database (deletes all data).
+
+```bash
+plattr db reset
+```
+
+Deletes the persistent volume claim and restarts the PostgreSQL deployment. Run `plattr dev` to recreate schemas.
+
+---
+
 ### `plattr status`
 
 Show application status and conditions.
@@ -232,14 +368,12 @@ Phase:       Running
 URL:         https://my-app.platform.company.dev
 
 Conditions:
-  ✅ DatabaseReady
-  ✅ StorageReady
-  ✅ AuthReady
-  ✅ DeploymentReady
-  ✅ IngressReady
+  DatabaseReady
+  StorageReady
+  AuthReady
+  DeploymentReady
+  IngressReady
 ```
-
-Status icons: ✅ (True), ❌ (False), ⏳ (Unknown)
 
 **Example:**
 ```bash

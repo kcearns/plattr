@@ -1,22 +1,17 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { execSync } from 'node:child_process';
-import { readFileSync, unlinkSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
-import { homedir } from 'node:os';
 import { initCommand } from './commands/init';
 import { devCommand } from './commands/dev';
-import { testCommand } from './commands/test';
+import { testCommand, testCiCommand } from './commands/test';
 import { buildCommand } from './commands/build';
 import { previewCommand, previewListCommand } from './commands/preview';
 import { dbMigrateCommand, dbShellCommand, dbSeedCommand, dbConnectCommand } from './commands/db';
+import { infraStatusCommand, infraStopCommand, infraStartCommand, infraDestroyCommand, dbResetCommand } from './commands/infra';
+import { deployLocalCommand, undeployLocalCommand } from './commands/deploy-local';
 import { statusCommand } from './commands/status';
 import { logsCommand } from './commands/logs';
 import { envSetCommand, envListCommand, envUnsetCommand } from './commands/env';
-
-const PID_DIR = join(homedir(), '.plattr');
-const PID_FILE = join(PID_DIR, 'dev.pid');
 
 const program = new Command();
 
@@ -39,64 +34,62 @@ program
   .action((options) => devCommand(options.port));
 
 program
-  .command('down')
-  .description('Stop the local development environment')
-  .action(() => {
-    let killed = false;
-
-    // 1. Try PID file first
-    if (existsSync(PID_FILE)) {
-      const pid = parseInt(readFileSync(PID_FILE, 'utf-8').trim(), 10);
-      if (!isNaN(pid)) {
-        try {
-          process.kill(pid, 0); // check alive
-          console.log(`[PLATTR] Stopping dev environment (PID ${pid})...`);
-          process.kill(pid, 'SIGTERM');
-          killed = true;
-        } catch {
-          console.log(`[PLATTR] Stale PID file (process ${pid} not running).`);
-        }
-      }
-      unlinkSync(PID_FILE);
-    }
-
-    // 2. Find any orphaned "dagger call dev" processes
-    try {
-      const pids = execSync('pgrep -f "dagger call.*(dev|infra)"', { encoding: 'utf-8' })
-        .trim()
-        .split('\n')
-        .map((p) => parseInt(p, 10))
-        .filter((p) => !isNaN(p) && p !== process.pid);
-
-      for (const pid of pids) {
-        try {
-          process.kill(pid, 'SIGTERM');
-          console.log(`[PLATTR] Stopped orphaned dagger process (PID ${pid}).`);
-          killed = true;
-        } catch {
-          // already dead, ignore
-        }
-      }
-    } catch {
-      // pgrep returns non-zero when no matches — that's fine
-    }
-
-    if (killed) {
-      console.log('[PLATTR] Dev environment stopped. Dagger will clean up all containers.');
-    } else {
-      console.log('[PLATTR] No running dev environment found.');
-    }
-  });
-
-program
   .command('test')
-  .description('Run tests with full infrastructure')
-  .action(() => testCommand());
+  .description('Run tests against local infrastructure')
+  .option('--ci', 'Run Dagger-based ephemeral tests (clean state)')
+  .action((options) => options.ci ? testCiCommand() : testCommand());
 
 program
   .command('build')
   .description('Build production container image')
   .action(() => buildCommand());
+
+// --- Deploy local ---
+const deploy = program.command('deploy').description('Deployment commands');
+
+deploy
+  .command('local')
+  .description('Build production image and deploy to local Kind cluster')
+  .option('-p, --port <port>', 'Port for the app', parseInt)
+  .option('--skip-tests', 'Skip the test step')
+  .option('--skip-scan', 'Skip the Trivy security scan')
+  .option('--fail-on-scan', 'Exit with error if vulnerabilities found (no prompt)')
+  .action((options) => deployLocalCommand({
+    port: options.port,
+    skipTests: options.skipTests,
+    skipScan: options.skipScan,
+    failOnScan: options.failOnScan,
+  }));
+
+const undeploy = program.command('undeploy').description('Remove deployments');
+
+undeploy
+  .command('local')
+  .description('Remove app deployment from local Kind cluster')
+  .action(() => undeployLocalCommand());
+
+// --- Infrastructure ---
+const infra = program.command('infra').description('Local infrastructure management');
+
+infra
+  .command('status')
+  .description('Show local infrastructure status')
+  .action(() => infraStatusCommand());
+
+infra
+  .command('stop')
+  .description('Stop local infrastructure (data preserved)')
+  .action(() => infraStopCommand());
+
+infra
+  .command('start')
+  .description('Start local infrastructure')
+  .action(() => infraStartCommand());
+
+infra
+  .command('destroy')
+  .description('Delete local cluster and all data')
+  .action(() => infraDestroyCommand());
 
 // --- Preview ---
 const preview = program.command('preview').description('Preview environments');
@@ -138,6 +131,10 @@ db.command('connect')
     const config = loadConfig();
     dbConnectCommand(options.env, config.name);
   });
+
+db.command('reset')
+  .description('Reset local database (deletes all data)')
+  .action(() => dbResetCommand());
 
 // --- Status ---
 program
