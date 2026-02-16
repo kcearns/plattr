@@ -10,10 +10,13 @@ metadata:
   name: traefik
 rules:
   - apiGroups: [""]
-    resources: ["services", "endpoints", "secrets"]
+    resources: ["services", "endpoints", "secrets", "nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["traefik.io"]
-    resources: ["ingressroutes", "ingressroutetcps"]
+    resources: ["*"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -44,7 +47,6 @@ spec:
         app: traefik
     spec:
       serviceAccountName: traefik
-      hostNetwork: true
       containers:
         - name: traefik
           image: traefik:v3.2
@@ -61,6 +63,25 @@ spec:
             - --entrypoints.opensearch.address=:9200
             - --entrypoints.dashboards.address=:5601
             - --entrypoints.app.address=:3000
+          ports:
+            - containerPort: 5432
+              hostPort: 5432
+            - containerPort: 3001
+              hostPort: 3001
+            - containerPort: 9000
+              hostPort: 9000
+            - containerPort: 9001
+              hostPort: 9001
+            - containerPort: 8080
+              hostPort: 8080
+            - containerPort: 6379
+              hostPort: 6379
+            - containerPort: 9200
+              hostPort: 9200
+            - containerPort: 5601
+              hostPort: 5601
+            - containerPort: 3000
+              hostPort: 3000
           resources:
             requests:
               memory: 64Mi
