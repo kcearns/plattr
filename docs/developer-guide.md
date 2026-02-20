@@ -286,6 +286,56 @@ GRANT SELECT ON my_table TO my_app_anon;
 GRANT INSERT, UPDATE ON my_table TO my_app_anon;
 ```
 
+### Migrations in Staging and Production
+
+When you push code with new migrations, here's what happens — and what doesn't:
+
+**What the operator handles (once, on first provision):**
+- Creates the database schema (`staging_my_app`, `prod_my_app`)
+- Creates the app role (`staging_my_app_app`) and anon role (`staging_my_app_anon`)
+- Creates the `{name}-db` Secret containing `DATABASE_URL`
+
+**What the operator does NOT do:**
+- Run your migration files — the operator has no knowledge of your migration tool or schema changes
+
+**How migrations actually run in remote environments:**
+
+The recommended approach is to run migrations on container startup. Your Dockerfile should include the migration step before starting the app:
+
+```dockerfile
+# Example: Prisma
+CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+
+# Example: Knex
+CMD ["sh", "-c", "npx knex migrate:latest && node server.js"]
+```
+
+This way, every time the operator does a rolling update (new `imageRef` → new Deployment pods), the new pods run migrations before accepting traffic. Since migration tools are idempotent, only new migrations are applied — already-applied migrations are skipped.
+
+**Alternative: run migrations manually via the CLI:**
+
+```bash
+# Connect to staging DB and run migrations yourself
+plattr db connect --env staging
+# Then run SQL manually, or:
+
+# Port-forward and run your migration tool locally against the remote DB
+# (retrieve the DATABASE_URL from the K8s Secret)
+kubectl get secret my-app-db -n staging -o jsonpath='{.data.DATABASE_URL}' | base64 -d
+DATABASE_URL=<that value> npx prisma migrate deploy
+```
+
+**The typical push workflow with a migration:**
+
+1. Write your migration locally (`npx prisma migrate dev`, `npx knex migrate:make`, or raw SQL)
+2. Run it locally: `plattr db migrate`
+3. Test locally: `plattr test`
+4. Push to branch → CI builds image (with migration files baked in)
+5. Operator updates Deployment → new pods start → migration runs on startup
+6. Verify: `plattr status --env staging` and `plattr logs --env staging`
+
+> **Note:** If your app does not run migrations on startup, you must run them manually before or after pushing. There is no built-in CI migration step in the generated workflow.
+
 ## PostgREST (Auto-Generated REST API)
 
 When `database.enabled: true`, you get an auto-generated REST API from your database schema. PostgREST introspects your tables and exposes them as RESTful endpoints.

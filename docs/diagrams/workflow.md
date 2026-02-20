@@ -127,6 +127,8 @@
 │  │   │  Checks metadata.generation vs last reconciled           │     │   │
 │  │   │                                                          │     │   │
 │  │   │  Reconciliation pipeline (sequential):                   │     │   │
+│  │   │  (on first deploy, all steps create resources;           │     │   │
+│  │   │   on subsequent pushes, most are no-ops via upsert)      │     │   │
 │  │   │                                                          │     │   │
 │  │   │  ┌─────────────────────────────────────────────────┐    │     │   │
 │  │   │  │ ① reconcileDatabase()                           │    │     │   │
@@ -134,6 +136,7 @@
 │  │   │  │   CREATE ROLE staging_my_app_app (CRUD)         │    │     │   │
 │  │   │  │   CREATE ROLE staging_my_app_anon (PostgREST)   │    │     │   │
 │  │   │  │   → Secret: my-app-db (DATABASE_URL)            │    │     │   │
+│  │   │  │   ⚠ Does NOT run app migrations (see below)    │    │     │   │
 │  │   │  └────────────────────┬────────────────────────────┘    │     │   │
 │  │   │                       ▼                                  │     │   │
 │  │   │  ┌─────────────────────────────────────────────────┐    │     │   │
@@ -156,6 +159,7 @@
 │  │   │  │     ServiceAccount: my-app                      │    │     │   │
 │  │   │  │     Deployment: my-app                          │    │     │   │
 │  │   │  │       ├── app container (from ECR imageRef)     │    │     │   │
+│  │   │  │       │   └── runs migrations on startup (CMD)  │    │     │   │
 │  │   │  │       └── PostgREST sidecar (v12.2.3)          │    │     │   │
 │  │   │  │     Service: my-app (:80, :3001)                │    │     │   │
 │  │   │  │     Ingress: my-app (all paths)                 │    │     │   │
@@ -195,6 +199,79 @@
 │  │                                                                     │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
+
+
+## Database Migration Flow (on subsequent pushes)
+
+```
+  Developer writes migration locally
+         │
+         ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  LOCAL                                                          │
+  │                                                                 │
+  │  $ npx prisma migrate dev        ← create migration file       │
+  │  $ plattr db migrate             ← run against local PG        │
+  │  $ plattr test                   ← verify locally              │
+  │                                                                 │
+  │  Migration files are now in your repo (e.g. prisma/migrations/) │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  GIT PUSH → CI/CD                                               │
+  │                                                                 │
+  │  Image is built with migration files baked in                   │
+  │  Image pushed to ECR                                            │
+  │  Application CR updated with new imageRef                       │
+  └────────────────────────────┬────────────────────────────────────┘
+                               │
+                               ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  EKS — OPERATOR RECONCILIATION                                  │
+  │                                                                 │
+  │  imageRef changed → reconcileWorkload() triggers rolling update │
+  │                                                                 │
+  │  ┌───────────────────────────────────────────────────────────┐  │
+  │  │  What the operator does:                                  │  │
+  │  │    ✓ Updates Deployment with new image                    │  │
+  │  │    ✓ Rolling update: new pods start, old pods drain       │  │
+  │  │    ✓ DB schema/roles already exist (no-op on re-run)     │  │
+  │  │                                                           │  │
+  │  │  What the operator does NOT do:                           │  │
+  │  │    ✗ Run migration files                                  │  │
+  │  │    ✗ Detect schema changes                                │  │
+  │  │    ✗ Coordinate migration ordering                        │  │
+  │  └───────────────────────────────────────────────────────────┘  │
+  │                                                                 │
+  │  ┌───────────────────────────────────────────────────────────┐  │
+  │  │  New pod starts up:                                       │  │
+  │  │                                                           │  │
+  │  │  ┌─────────────────────────────────────────────────────┐  │  │
+  │  │  │  Container entrypoint (Dockerfile CMD):             │  │  │
+  │  │  │                                                     │  │  │
+  │  │  │  1. npx prisma migrate deploy  ← runs new          │  │  │
+  │  │  │     (idempotent — skips already-applied migrations) │  │  │
+  │  │  │                                                     │  │  │
+  │  │  │  2. node server.js             ← app starts         │  │  │
+  │  │  │                                                     │  │  │
+  │  │  │  Connects to Aurora via DATABASE_URL from Secret:   │  │  │
+  │  │  │    staging_my_app schema                            │  │  │
+  │  │  │    staging_my_app_app role (full CRUD)              │  │  │
+  │  │  └─────────────────────────────────────────────────────┘  │  │
+  │  └───────────────────────────────────────────────────────────┘  │
+  │                                                                 │
+  │  PostgREST sidecar auto-reloads schema via LISTEN/NOTIFY        │
+  │  New tables/columns immediately available at /api/rest/*        │
+  └─────────────────────────────────────────────────────────────────┘
+
+
+  Alternative: Run migrations manually
+  ─────────────────────────────────────
+  $ plattr db connect --env staging          ← opens psql to Aurora
+  $ kubectl get secret my-app-db -n staging  ← get DATABASE_URL
+  $ DATABASE_URL=<...> npx prisma migrate deploy
+```
 
 
 ## Preview Environment Flow (PR-based)
