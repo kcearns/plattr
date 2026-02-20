@@ -119,21 +119,27 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     // 5. IRSA — IAM role for the operator ServiceAccount
     // -------------------------------------------------------
-    // Extract the OIDC issuer URL from the provider ARN
+    // Extract the OIDC issuer URL from the provider ARN.
+    // Use CfnJson so the condition keys resolve at deploy time —
+    // this is required when the OIDC ARN is a cross-stack token.
     const oidcIssuer = cdk.Fn.select(
       1,
       cdk.Fn.split('oidc-provider/', props.oidcProviderArn),
     );
 
+    const irsaCondition = new cdk.CfnJson(this, 'IrsaCondition', {
+      value: {
+        [`${oidcIssuer}:sub`]:
+          `system:serviceaccount:${operatorNamespace}:plattr-operator`,
+        [`${oidcIssuer}:aud`]: 'sts.amazonaws.com',
+      },
+    });
+
     const operatorRole = new iam.Role(this, 'OperatorIrsaRole', {
       assumedBy: new iam.FederatedPrincipal(
         props.oidcProviderArn,
         {
-          StringEquals: {
-            [`${oidcIssuer}:sub`]:
-              `system:serviceaccount:${operatorNamespace}:plattr-operator`,
-            [`${oidcIssuer}:aud`]: 'sts.amazonaws.com',
-          },
+          StringEquals: irsaCondition,
         },
         'sts:AssumeRoleWithWebIdentity',
       ),

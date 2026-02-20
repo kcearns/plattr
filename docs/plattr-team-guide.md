@@ -38,15 +38,100 @@ AWS Account
 
 ## CDK Deployment
 
-The infrastructure is defined in two CDK stacks.
+The infrastructure is defined in three CDK stacks. All commands run from `packages/cdk`.
 
-### Stack 1: PlattrOperatorStack
+```bash
+cd packages/cdk
+npm install
+```
+
+### Deployment Modes
+
+There are two ways to deploy Plattr depending on whether you want CDK to manage the foundational infrastructure (VPC, EKS, Aurora) or you're bringing your own.
+
+#### Option A: CDK-managed infrastructure (recommended for new environments)
+
+Set `-c useInfraStack=true` and CDK provisions everything end-to-end. The `PlattrInfraStack` creates the VPC, EKS cluster, and Aurora database, then wires them directly into the operator stack — no manual ARN/endpoint copying required.
+
+```bash
+# First-time bootstrap (once per account/region)
+npx cdk bootstrap aws://ACCOUNT_ID/ca-central-1
+
+# Deploy infra + operator together
+npx cdk deploy PlattrInfraStack PlattrOperatorStack \
+  -c useInfraStack=true \
+  -c account=ACCOUNT_ID \
+  -c region=ca-central-1 \
+  -c baseDomain=nonprod.yourcompany.dev \
+  -c hostedZoneId=Z0123456789
+```
+
+CDK handles cross-stack references automatically. The infra stack exports the cluster name, OIDC provider ARN, Aurora endpoint, and security group ID — the operator stack consumes them without any manual input.
+
+#### Option B: Bring your own infrastructure
+
+If you already have an EKS cluster and Aurora database (or manage them outside CDK), keep the default mode and pass the values via `-c` context flags:
+
+```bash
+npx cdk deploy PlattrOperatorStack \
+  -c eksClusterName=my-eks-cluster \
+  -c kubectlRoleArn=arn:aws:iam::123456789012:role/my-kubectl-role \
+  -c oidcProviderArn=arn:aws:iam::123456789012:oidc-provider/oidc.eks... \
+  -c auroraEndpoint=my-aurora.cluster-xxx.ca-central-1.rds.amazonaws.com \
+  -c auroraSgId=sg-xxxxx \
+  -c baseDomain=nonprod.yourcompany.dev \
+  -c hostedZoneId=Z0123456789
+```
+
+See [Step 1: Manual Setup](step1-eks-aurora-setup.md#appendix-a-manual-setup-alternative) for how to create these resources with `eksctl` and AWS CLI.
+
+### Stack 1: PlattrInfraStack
+
+Provisions the foundational AWS infrastructure. Only deployed when using `-c useInfraStack=true`.
+
+```bash
+# Preview changes
+npx cdk diff PlattrInfraStack -c useInfraStack=true
+
+# Deploy
+npx cdk deploy PlattrInfraStack -c useInfraStack=true
+```
+
+**What it creates:**
+- **VPC** with public/private subnets across 2 AZs, 1 NAT gateway
+- **EKS cluster** (K8s 1.31) with a managed node group (t3.large, 2-4 nodes, ON_DEMAND)
+- **kubectl IAM role** for CDK and manual cluster access
+- **OIDC provider** for IRSA (auto-enabled by the EKS construct)
+- **Aurora Serverless v2** (PostgreSQL 16.4, 0.5-4 ACU scaling, `plattr` default database)
+- **Security group rule** allowing EKS cluster SG → Aurora on port 5432
+
+**Stack outputs:**
+
+| Output | Description |
+|--------|-------------|
+| `ClusterName` | EKS cluster name |
+| `KubectlRoleArn` | IAM role for kubectl access |
+| `OidcProviderArn` | OIDC provider ARN for IRSA |
+| `AuroraEndpoint` | Aurora cluster writer endpoint |
+| `AuroraSecurityGroupId` | Aurora security group ID |
+
+**Customizable props:**
+
+| Context key | Default | Description |
+|---|---|---|
+| `eksClusterName` | `plattr-nonprod` | EKS cluster name |
+| `nodeInstanceType` | `t3.large` | EC2 instance type for worker nodes |
+| `nodeMinSize` | `2` | Minimum node group size |
+| `nodeMaxSize` | `4` | Maximum node group size |
+| `nodeDesiredSize` | `2` | Desired node group size |
+| `auroraMinCapacity` | `0.5` | Aurora Serverless v2 min ACU |
+| `auroraMaxCapacity` | `4` | Aurora Serverless v2 max ACU |
+
+### Stack 2: PlattrOperatorStack
 
 Deploys the operator, add-ons, CRDs, and environment namespaces.
 
 ```bash
-cd packages/cdk
-
 # Review what will be deployed
 npx cdk diff PlattrOperatorStack
 
@@ -67,7 +152,18 @@ npx cdk deploy PlattrOperatorStack
   - ingress-nginx with AWS NLB
   - Keycloak 26.0 (2 replicas, external PostgreSQL, HTTPS Ingress)
 
-### Stack 2: PlattrCicdStack
+**Additional context flags (operator stack):**
+
+| Key | Default | Description |
+|---|---|---|
+| `baseDomain` | `platform.company.dev` | Base domain for app ingresses |
+| `hostedZoneId` | — | Route 53 hosted zone ID |
+| `installCertManager` | `true` | Install cert-manager |
+| `installExternalDns` | `true` | Install external-dns |
+| `installIngressNginx` | `true` | Install ingress-nginx |
+| `installKeycloak` | `true` | Install Keycloak |
+
+### Stack 3: PlattrCicdStack
 
 Sets up CI/CD roles for GitHub Actions.
 
@@ -81,19 +177,12 @@ npx cdk deploy PlattrCicdStack
 - **CI Deploy Role** — non-prod deployments from any branch (ECR push + EKS describe)
 - **Prod Deploy Role** — production deployments from main branch only
 
-### CDK Context Values
+**Context flags:**
 
-Configure in `cdk.json` or via `-c` flags:
-
-| Key | Description | Example |
+| Key | Default | Description |
 |---|---|---|
-| `clusterName` | EKS cluster name | `platform-eks` |
-| `kubectlRoleArn` | ARN of kubectl admin role | `arn:aws:iam::role/...` |
-| `oidcProviderArn` | EKS OIDC provider ARN | `arn:aws:iam::oidc-provider/...` |
-| `dbHost` | Aurora cluster endpoint | `platform-db.cluster-xxx.us-east-1.rds.amazonaws.com` |
-| `dbSecretArn` | Secrets Manager ARN for DB admin creds | `arn:aws:secretsmanager:...` |
-| `baseDomain` | Plattr base domain | `platform.company.dev` |
-| `keycloakDomain` | Keycloak domain | `auth.platform.company.dev` |
+| `githubOrg` | — | GitHub organization name |
+| `githubRepoFilter` | — | Optional repo name filter |
 
 ## Operator Management
 
