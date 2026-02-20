@@ -31,6 +31,12 @@ export interface PlattrOperatorStackProps extends cdk.StackProps {
   installIngressNginx?: boolean;
   /** Install Keycloak Helm chart for managed auth (default: true) */
   installKeycloak?: boolean;
+  /** ElastiCache Redis endpoint (empty = container mode) */
+  redisEndpoint?: string;
+  /** OpenSearch Service domain endpoint (empty = container mode) */
+  opensearchEndpoint?: string;
+  /** Production mode — only creates production namespace (default: false) */
+  prodMode?: boolean;
 }
 
 export class PlattrOperatorStack extends cdk.Stack {
@@ -216,6 +222,8 @@ export class PlattrOperatorStack extends cdk.Stack {
           leaderElection: 'true',
           keycloakAdminUrl: `http://keycloak-http.${operatorNamespace}:80`,
           keycloakAdminUser: 'admin',
+          redisEndpoint: props.redisEndpoint || '',
+          opensearchEndpoint: props.opensearchEndpoint || '',
         },
       },
     });
@@ -223,7 +231,8 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     // 7. Environment namespaces
     // -------------------------------------------------------
-    for (const env of ['staging', 'uat', 'production']) {
+    const namespaces = props.prodMode ? ['production'] : ['staging', 'uat', 'production'];
+    for (const env of namespaces) {
       cluster.addManifest(`Namespace-${env}`, {
         apiVersion: 'v1',
         kind: 'Namespace',

@@ -16,6 +16,8 @@ interface WorkloadSpec {
   database?: { enabled: boolean; schemaName?: string };
   storage?: { enabled: boolean };
   auth?: { enabled: boolean };
+  redis?: { enabled: boolean };
+  search?: { enabled: boolean };
   scaling: { min: number; max: number; targetCPU: number };
   domain: string;
 }
@@ -39,7 +41,7 @@ async function upsert<T>(
 }
 
 export async function reconcileWorkload(spec: WorkloadSpec): Promise<void> {
-  const { name, namespace, imageRef, framework, environment, database, storage, auth, scaling, domain } = spec;
+  const { name, namespace, imageRef, framework, environment, database, storage, auth, redis, search, scaling, domain } = spec;
 
   const labels: Record<string, string> = {
     'app.kubernetes.io/name': name,
@@ -75,6 +77,12 @@ export async function reconcileWorkload(spec: WorkloadSpec): Promise<void> {
   }
   if (auth?.enabled) {
     envFrom.push({ configMapRef: { name: `${name}-auth`, optional: true } });
+  }
+  if (redis?.enabled) {
+    envFrom.push({ configMapRef: { name: `${name}-redis` } });
+  }
+  if (search?.enabled) {
+    envFrom.push({ configMapRef: { name: `${name}-search` } });
   }
 
   // App container env vars

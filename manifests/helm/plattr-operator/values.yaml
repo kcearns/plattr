@@ -24,6 +24,8 @@ config:
   keycloakAdminUrl: "http://keycloak-http.plattr-system:80"
   keycloakAdminUser: "admin"
   keycloakAdminPassword: ""  # From a K8s Secret, not in values
+  redisEndpoint: ""          # ElastiCache endpoint (empty = container mode)
+  opensearchEndpoint: ""     # OpenSearch Service endpoint (empty = container mode)
 
 resources:
   requests:

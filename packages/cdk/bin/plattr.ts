@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { PlattrInfraStack } from '../src/lib/plattr-infra-stack';
+import { PlattrProdInfraStack } from '../src/lib/plattr-prod-infra-stack';
 import { PlattrOperatorStack } from '../src/lib/plattr-operator-stack';
 import { PlattrCicdStack } from '../src/lib/plattr-cicd-stack';
 
@@ -16,18 +17,58 @@ const REGION = app.node.tryGetContext('region') || process.env.CDK_DEFAULT_REGIO
 const env = { account: ACCOUNT, region: REGION };
 
 // =============================================================================
-// Mode: useInfraStack
+// Mode: target
 // =============================================================================
-// Set -c useInfraStack=true to provision VPC + EKS + Aurora via CDK and
-// automatically wire them into the operator stack (no manual -c args needed).
+// Set -c target=prod to deploy production infrastructure in a separate account.
+// Production uses AWS managed services (ElastiCache, OpenSearch) instead of
+// containerized equivalents.
+//
+// Set -c useInfraStack=true to provision non-prod VPC + EKS + Aurora via CDK.
 // When false (default), the operator stack expects manual -c context args
 // pointing to existing infrastructure.
 // =============================================================================
 
+const target = app.node.tryGetContext('target');
 const useInfraStack = app.node.tryGetContext('useInfraStack') === 'true';
 
-if (useInfraStack) {
-  // CDK-managed infrastructure — PlattrInfraStack provisions VPC, EKS, Aurora
+if (target === 'prod') {
+  // ─── Production Account ─────────────────────────────────────────────
+  // Separate EKS cluster with AWS managed services (Aurora, ElastiCache, OpenSearch)
+  const prodInfra = new PlattrProdInfraStack(app, 'PlattrProdInfraStack', {
+    env,
+    clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-prod',
+    nodeInstanceType: app.node.tryGetContext('nodeInstanceType') || undefined,
+    nodeMinSize: numberOrUndefined(app.node.tryGetContext('nodeMinSize')),
+    nodeMaxSize: numberOrUndefined(app.node.tryGetContext('nodeMaxSize')),
+    nodeDesiredSize: numberOrUndefined(app.node.tryGetContext('nodeDesiredSize')),
+    auroraMinCapacity: numberOrUndefined(app.node.tryGetContext('auroraMinCapacity')),
+    auroraMaxCapacity: numberOrUndefined(app.node.tryGetContext('auroraMaxCapacity')),
+    opensearchInstanceType: app.node.tryGetContext('opensearchInstanceType') || undefined,
+    opensearchDataNodeCount: numberOrUndefined(app.node.tryGetContext('opensearchDataNodeCount')),
+    nonprodAccountId: app.node.tryGetContext('nonprodAccountId') || undefined,
+  });
+
+  new PlattrOperatorStack(app, 'PlattrProdOperatorStack', {
+    env,
+    eksClusterName: prodInfra.cluster.clusterName,
+    kubectlRoleArn: prodInfra.cluster.kubectlRole!.roleArn,
+    oidcProviderArn: prodInfra.cluster.openIdConnectProvider.openIdConnectProviderArn,
+    auroraClusterEndpoint: prodInfra.auroraCluster.clusterEndpoint.hostname,
+    auroraSecurityGroupId: prodInfra.auroraSecurityGroup.securityGroupId,
+    baseDomain:
+      app.node.tryGetContext('baseDomain') || 'prod.company.dev',
+    hostedZoneId:
+      app.node.tryGetContext('hostedZoneId') || 'Z0123456789',
+    installCertManager: app.node.tryGetContext('installCertManager') !== 'false',
+    installExternalDns: app.node.tryGetContext('installExternalDns') !== 'false',
+    installIngressNginx: app.node.tryGetContext('installIngressNginx') !== 'false',
+    installKeycloak: app.node.tryGetContext('installKeycloak') !== 'false',
+    redisEndpoint: prodInfra.redisEndpoint,
+    opensearchEndpoint: prodInfra.opensearchEndpoint,
+    prodMode: true,
+  });
+} else if (useInfraStack) {
+  // ─── Non-Prod: CDK-managed infrastructure ───────────────────────────
   const infra = new PlattrInfraStack(app, 'PlattrInfraStack', {
     env,
     clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-nonprod',
@@ -56,7 +97,7 @@ if (useInfraStack) {
     installKeycloak: app.node.tryGetContext('installKeycloak') !== 'false',
   });
 } else {
-  // Existing infrastructure — provide values via -c context args
+  // ─── Non-Prod: Existing infrastructure ──────────────────────────────
   const EKS_CLUSTER_NAME = app.node.tryGetContext('eksClusterName') || 'my-eks-cluster';
   const KUBECTL_ROLE_ARN = app.node.tryGetContext('kubectlRoleArn') || `arn:aws:iam::${ACCOUNT}:role/my-eks-kubectl-role`;
   const OIDC_PROVIDER_ARN = app.node.tryGetContext('oidcProviderArn') || `arn:aws:iam::${ACCOUNT}:oidc-provider/oidc.eks.${REGION}.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE`;
@@ -86,6 +127,7 @@ new PlattrCicdStack(app, 'PlattrCicdStack', {
   env,
   githubOrg: app.node.tryGetContext('githubOrg') || 'your-org',
   githubRepoFilter: app.node.tryGetContext('githubRepoFilter'),
+  prodAccountId: app.node.tryGetContext('prodAccountId') || undefined,
 });
 
 function numberOrUndefined(value: string | undefined): number | undefined {

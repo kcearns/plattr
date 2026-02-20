@@ -27,6 +27,8 @@ interface AppSpec {
   database?: { enabled: boolean };
   storage?: { enabled: boolean };
   auth?: { enabled: boolean };
+  redis?: { enabled: boolean };
+  search?: { enabled: boolean };
   domain?: string;
 }
 
@@ -102,6 +104,54 @@ export async function updateApplicationStatus(
           status: 'False',
           reason: 'ConfigMapNotFound',
           message: `ConfigMap "${appName}-auth" not found`,
+          lastTransitionTime: new Date().toISOString(),
+        });
+      }
+    }
+  }
+
+  // --- Redis check ---
+  if (spec.redis?.enabled) {
+    try {
+      await coreApi.readNamespacedConfigMap(`${appName}-redis`, namespace);
+      conditions.push({
+        type: 'RedisReady',
+        status: 'True',
+        reason: 'ConfigMapFound',
+        lastTransitionTime: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      const code = err?.response?.statusCode || err?.statusCode || err?.code;
+      if (code === 404) {
+        conditions.push({
+          type: 'RedisReady',
+          status: 'False',
+          reason: 'ConfigMapNotFound',
+          message: `ConfigMap "${appName}-redis" not found`,
+          lastTransitionTime: new Date().toISOString(),
+        });
+      }
+    }
+  }
+
+  // --- Search check ---
+  if (spec.search?.enabled) {
+    try {
+      await coreApi.readNamespacedConfigMap(`${appName}-search`, namespace);
+      conditions.push({
+        type: 'SearchReady',
+        status: 'True',
+        reason: 'ConfigMapFound',
+        lastTransitionTime: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      const code = err?.response?.statusCode || err?.statusCode || err?.code;
+      if (code === 404) {
+        conditions.push({
+          type: 'SearchReady',
+          status: 'False',
+          reason: 'ConfigMapNotFound',
+          message: `ConfigMap "${appName}-search" not found`,
           lastTransitionTime: new Date().toISOString(),
         });
       }

@@ -8,6 +8,8 @@ export interface PlattrCicdStackProps extends cdk.StackProps {
   githubOrg: string;
   /** GitHub repository name filter (optional, e.g. "my-app"). If unset, allows all repos in the org. */
   githubRepoFilter?: string;
+  /** Production account ID. When set, the prod deploy role gets sts:AssumeRole permission into the prod account. */
+  prodAccountId?: string;
 }
 
 export class PlattrCicdStack extends cdk.Stack {
@@ -161,6 +163,28 @@ export class PlattrCicdStack extends cdk.Stack {
         resources: ['*'],
       }),
     );
+
+    // Cross-account: allow prod deploy role to assume a role in the prod account
+    if (props.prodAccountId) {
+      this.prodDeployRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['sts:AssumeRole'],
+          resources: [
+            `arn:aws:iam::${props.prodAccountId}:role/plattr-ci-deploy-prod`,
+          ],
+        }),
+      );
+
+      // Allow prod deploy role to describe the prod EKS cluster
+      this.prodDeployRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['eks:DescribeCluster'],
+          resources: [
+            `arn:aws:eks:*:${props.prodAccountId}:cluster/plattr-prod`,
+          ],
+        }),
+      );
+    }
 
     // -------------------------------------------------------
     // Outputs

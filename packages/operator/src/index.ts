@@ -1,6 +1,8 @@
 import * as k8s from '@kubernetes/client-node';
 import { reconcileDatabase, cleanupDatabase } from './reconcilers/database';
 import { reconcileStorage, cleanupStorage } from './reconcilers/storage';
+import { reconcileRedis, cleanupRedis } from './reconcilers/redis';
+import { reconcileOpenSearch, cleanupOpenSearch } from './reconcilers/opensearch';
 import { reconcileWorkload, cleanupWorkload } from './reconcilers/workload';
 import { reconcilePreview, cleanupPreview } from './reconcilers/preview';
 import { reconcileAuth, cleanupAuth } from './reconcilers/auth';
@@ -35,6 +37,8 @@ interface ApplicationSpec {
   database?: { enabled: boolean; schemaName?: string; migrations?: { path?: string; engine?: string } };
   storage?: { enabled: boolean; buckets?: Array<{ name: string; public: boolean; maxFileSize?: string }> };
   auth?: { enabled: boolean; providers?: string[] };
+  redis?: { enabled: boolean };
+  search?: { enabled: boolean };
   scaling?: { min?: number; max?: number; targetCPU?: number };
   domain?: string;
 }
@@ -103,6 +107,26 @@ async function reconcileApplication(name: string, namespace: string, spec: Appli
     }
   }
 
+  // --- Redis ---
+  if (spec.redis?.enabled) {
+    const redisResult = await reconcileRedis(name, namespace, environment);
+    if (!redisResult.ready) {
+      console.error(`  Redis provisioning failed: ${redisResult.error}`);
+    } else {
+      console.log(`  Redis: ready`);
+    }
+  }
+
+  // --- OpenSearch ---
+  if (spec.search?.enabled) {
+    const searchResult = await reconcileOpenSearch(name, namespace, environment);
+    if (!searchResult.ready) {
+      console.error(`  OpenSearch provisioning failed: ${searchResult.error}`);
+    } else {
+      console.log(`  OpenSearch: ready`);
+    }
+  }
+
   // --- Workload ---
   await reconcileWorkload({
     name,
@@ -113,6 +137,8 @@ async function reconcileApplication(name: string, namespace: string, spec: Appli
     database: spec.database,
     storage: spec.storage,
     auth: spec.auth,
+    redis: spec.redis,
+    search: spec.search,
     scaling: {
       min: spec.scaling?.min ?? 2,
       max: spec.scaling?.max ?? 20,
@@ -134,6 +160,16 @@ async function cleanupApplication(name: string, namespace: string, spec: Applica
   // Clean up auth
   if (spec?.auth?.enabled) {
     await cleanupAuth(name, namespace);
+  }
+
+  // Clean up Redis
+  if (spec?.redis?.enabled) {
+    await cleanupRedis(name, namespace);
+  }
+
+  // Clean up OpenSearch
+  if (spec?.search?.enabled) {
+    await cleanupOpenSearch(name, namespace);
   }
 
   // Clean up workload resources first (stop the app)

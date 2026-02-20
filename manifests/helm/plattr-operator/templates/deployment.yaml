@@ -42,6 +42,10 @@ spec:
               value: "{{ .Values.config.keycloakAdminUrl }}"
             - name: KEYCLOAK_ADMIN_USER
               value: "{{ .Values.config.keycloakAdminUser }}"
+            - name: REDIS_ENDPOINT
+              value: "{{ .Values.config.redisEndpoint }}"
+            - name: OPENSEARCH_ENDPOINT
+              value: "{{ .Values.config.opensearchEndpoint }}"
             - name: OPERATOR_NAMESPACE
               valueFrom:
                 fieldRef:

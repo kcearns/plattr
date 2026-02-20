@@ -1,25 +1,23 @@
 # Plattr Infrastructure Architecture
 
-## Final EKS Infrastructure Setup
+## Two-Account Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              AWS Account (ca-central-1)                         │
+│                         Non-Prod Account (ca-central-1)                         │
 │                                                                                 │
 │  ┌───────────────────────────────────────────────────────────────────────────┐  │
 │  │                    VPC (public + private subnets, 2 AZs)                  │  │
 │  │                                                                           │  │
 │  │  ┌─ Public Subnets ────────────────────────────────────────────────────┐  │  │
-│  │  │                                                                     │  │  │
 │  │  │   ┌──────────────┐        ┌──────────────┐                         │  │  │
 │  │  │   │  NAT Gateway │        │  Network LB  │◄──── internet traffic   │  │  │
 │  │  │   └──────┬───────┘        └──────┬───────┘                         │  │  │
 │  │  └──────────┼───────────────────────┼─────────────────────────────────┘  │  │
 │  │             │                       │                                     │  │
 │  │  ┌─ Private Subnets ───────────────┼─────────────────────────────────┐  │  │
-│  │  │          │                       │                                 │  │  │
 │  │  │  ┌───────┴───────────────────────┴──────────────────────────────┐ │  │  │
-│  │  │  │                  EKS Cluster (K8s 1.31)                      │ │  │  │
+│  │  │  │                EKS Cluster: plattr-nonprod (K8s 1.31)        │ │  │  │
 │  │  │  │              Managed Node Group: t3.large (2-4)              │ │  │  │
 │  │  │  │              OIDC Provider (for IRSA)                        │ │  │  │
 │  │  │  │                                                              │ │  │  │
@@ -27,66 +25,140 @@
 │  │  │  │  │                                                        │ │ │  │  │
 │  │  │  │  │  ┌─────────────────┐   ┌────────────────────────────┐ │ │ │  │  │
 │  │  │  │  │  │ Plattr Operator │   │ Keycloak (StatefulSet, 2r) │ │ │ │  │  │
-│  │  │  │  │  │   (Deployment)  │   │   Auth provider (OIDC)     │ │ │ │  │  │
-│  │  │  │  │  │   IRSA role     │   │   External PostgreSQL      │ │ │ │  │  │
-│  │  │  │  │  │   Leader elect  │   │   HTTPS Ingress            │ │ │ │  │  │
+│  │  │  │  │  │  (container     │   │   Auth provider (OIDC)     │ │ │ │  │  │
+│  │  │  │  │  │   mode)         │   │   External PostgreSQL      │ │ │ │  │  │
+│  │  │  │  │  │   IRSA role     │   │   HTTPS Ingress            │ │ │ │  │  │
 │  │  │  │  │  └─────────────────┘   └────────────────────────────┘ │ │ │  │  │
+│  │  │  │  │                                                        │ │ │  │  │
+│  │  │  │  │  ┌────────┐ ┌──────┐ ┌─────┐ ┌──────────┐            │ │ │  │  │
+│  │  │  │  │  │  PG    │ │MinIO │ │Redis│ │OpenSearch │            │ │ │  │  │
+│  │  │  │  │  │ :5432  │ │:9000 │ │:6379│ │  :9200   │            │ │ │  │  │
+│  │  │  │  │  └────────┘ └──────┘ └─────┘ └──────────┘            │ │ │  │  │
 │  │  │  │  │                                                        │ │ │  │  │
 │  │  │  │  │  ┌──────────────┐ ┌──────────────┐ ┌───────────────┐ │ │ │  │  │
 │  │  │  │  │  │ cert-manager │ │ external-dns │ │ ingress-nginx │ │ │ │  │  │
-│  │  │  │  │  │ Let's Encrypt│ │  Route 53    │ │   (NLB)       │ │ │ │  │  │
 │  │  │  │  │  └──────────────┘ └──────────────┘ └───────────────┘ │ │ │  │  │
 │  │  │  │  └────────────────────────────────────────────────────────┘ │ │  │  │
 │  │  │  │                                                              │ │  │  │
-│  │  │  │  ┌─── production ns ──┐  ┌─── staging ns ──┐  ┌─ uat ns ─┐ │ │  │  │
-│  │  │  │  │  App Deployments   │  │ App Deployments  │  │ App Dep. │ │ │  │  │
-│  │  │  │  │  + PostgREST       │  │ + PostgREST      │  │ + PGRST  │ │ │  │  │
-│  │  │  │  │  Services/Ingress  │  │ Services/Ingress │  │ Svc/Ing  │ │ │  │  │
-│  │  │  │  │  HPA (2-20)        │  │ HPA (2-20)       │  │ HPA      │ │ │  │  │
-│  │  │  │  │  Resource Quotas   │  │ Resource Quotas  │  │ Quotas   │ │ │  │  │
-│  │  │  │  └────────────────────┘  └──────────────────┘  └──────────┘ │ │  │  │
+│  │  │  │  ┌─── staging ns ──┐  ┌─── uat ns ──┐                      │ │  │  │
+│  │  │  │  │ App Deployments  │  │ App Deploy. │                      │ │  │  │
+│  │  │  │  │ + PostgREST      │  │ + PostgREST │                      │ │  │  │
+│  │  │  │  └──────────────────┘  └─────────────┘                      │ │  │  │
 │  │  │  │                                                              │ │  │  │
 │  │  │  │  ┌─── preview-app-pr-* ns (dynamic, TTL-based) ──────────┐ │ │  │  │
 │  │  │  │  │  Isolated namespace per PR                             │ │ │  │  │
-│  │  │  │  │  Deployment + PostgREST sidecar (HPA: 1-2)            │ │ │  │  │
-│  │  │  │  │  Own DB schema, own S3 buckets, own Keycloak realm    │ │ │  │  │
-│  │  │  │  │  Auto-cleanup after 72h (TTL controller every 5 min)  │ │ │  │  │
+│  │  │  │  │  Auto-cleanup after 72h (TTL controller)               │ │ │  │  │
 │  │  │  │  └───────────────────────────────────────────────────────┘ │ │  │  │
 │  │  │  └──────────────────────────────────────────────────────────────┘ │  │  │
 │  │  │                              │                                     │  │  │
-│  │  │                              │ port 5432 (SG rule)                 │  │  │
-│  │  │                              ▼                                     │  │  │
-│  │  │  ┌──────────────────────────────────────────────────────────────┐ │  │  │
-│  │  │  │        Aurora PostgreSQL Serverless v2 (16.4)                │ │  │  │
-│  │  │  │        0.5 - 4 ACU, database: plattr                        │ │  │  │
-│  │  │  │        Schema-per-app isolation (env-prefixed)               │ │  │  │
-│  │  │  │        prod_app / staging_app / uat_app / app_pr42           │ │  │  │
-│  │  │  └──────────────────────────────────────────────────────────────┘ │  │  │
-│  │  └────────────────────────────────────────────────────────────────────┘  │  │
-│  └───────────────────────────────────────────────────────────────────────────┘  │
+│  │  │                              │ port 5432 (containerized PG)        │  │  │
+│  │  └──────────────────────────────┼─────────────────────────────────────┘  │  │
+│  └─────────────────────────────────┼─────────────────────────────────────────┘  │
 │                                                                                 │
-│  ┌─ AWS Services (outside VPC) ──────────────────────────────────────────────┐ │
-│  │                                                                            │ │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────────┐  ┌───────────┐  │ │
-│  │  │     S3       │  │     ECR      │  │ Secrets Manager │  │ Route 53  │  │ │
-│  │  │              │  │              │  │                 │  │           │  │ │
-│  │  │ Bucket/app/  │  │ plattr-      │  │ plattr/db-admin │  │ Hosted    │  │ │
-│  │  │ env:         │  │   operator   │  │ (Aurora admin   │  │ Zone for  │  │ │
-│  │  │ plattr-prod- │  │ plattr-apps  │  │  credentials)  │  │ baseDomain│  │ │
-│  │  │   app-uploads│  │              │  │                 │  │           │  │ │
-│  │  │ plattr-stg-  │  │ (25/50 img   │  │                 │  │ external- │  │ │
-│  │  │   app-uploads│  │  retention)  │  │                 │  │ dns auto  │  │ │
-│  │  └──────────────┘  └──────────────┘  └─────────────────┘  └───────────┘  │ │
-│  └────────────────────────────────────────────────────────────────────────────┘ │
+│  ┌─ AWS Services ──────────────────────────────────────────────────────────┐   │
+│  │  ┌──────────┐  ┌──────────┐  ┌─────────────────┐  ┌───────────┐       │   │
+│  │  │    S3    │  │   ECR    │  │ Secrets Manager │  │ Route 53  │       │   │
+│  │  │          │  │ plattr-  │  │ plattr/db-admin │  │           │       │   │
+│  │  │ Bucket/  │  │  operator│  │                 │  │ *.nonprod │       │   │
+│  │  │ app/env  │  │ plattr-  │  │                 │  │ .company  │       │   │
+│  │  │          │  │  apps    │  │                 │  │  .dev     │       │   │
+│  │  └──────────┘  └──────────┘  └─────────────────┘  └───────────┘       │   │
+│  └────────────────────────────────────────────────────────────────────────┘   │
 │                                                                                 │
 │  ┌─ IAM ─────────────────────────────────────────────────────────────────────┐ │
 │  │  GitHub OIDC Provider (keyless CI auth)                                    │ │
 │  │  CI Deploy Role  — any branch → ECR push + EKS describe (non-prod)        │ │
-│  │  Prod Deploy Role — main branch only → production deployments             │ │
+│  │  Prod Deploy Role — main branch only → sts:AssumeRole into prod account   │ │
 │  │  Operator IRSA Role — S3 + Secrets Manager + STS                          │ │
-│  │  kubectl IAM Role — cluster admin access                                   │ │
 │  └────────────────────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────────────────────┘
+
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          Prod Account (ca-central-1)                            │
+│                                                                                 │
+│  ┌───────────────────────────────────────────────────────────────────────────┐  │
+│  │                    VPC (public + private subnets, 2 AZs)                  │  │
+│  │                                                                           │  │
+│  │  ┌─ Public Subnets ────────────────────────────────────────────────────┐  │  │
+│  │  │   ┌──────────────┐        ┌──────────────┐                         │  │  │
+│  │  │   │  NAT Gateway │        │  Network LB  │◄──── internet traffic   │  │  │
+│  │  │   └──────┬───────┘        └──────┬───────┘                         │  │  │
+│  │  └──────────┼───────────────────────┼─────────────────────────────────┘  │  │
+│  │             │                       │                                     │  │
+│  │  ┌─ Private Subnets ───────────────┼─────────────────────────────────┐  │  │
+│  │  │  ┌───────┴───────────────────────┴──────────────────────────────┐ │  │  │
+│  │  │  │                EKS Cluster: plattr-prod (K8s 1.31)           │ │  │  │
+│  │  │  │              Managed Node Group: t3.xlarge (2-6)             │ │  │  │
+│  │  │  │              OIDC Provider (for IRSA)                        │ │  │  │
+│  │  │  │                                                              │ │  │  │
+│  │  │  │  ┌────────────────── plattr-system ns ────────────────────┐ │ │  │  │
+│  │  │  │  │                                                        │ │ │  │  │
+│  │  │  │  │  ┌─────────────────┐   ┌────────────────────────────┐ │ │ │  │  │
+│  │  │  │  │  │ Plattr Operator │   │ Keycloak (StatefulSet, 2r) │ │ │ │  │  │
+│  │  │  │  │  │  (managed mode) │   │   Auth provider (OIDC)     │ │ │ │  │  │
+│  │  │  │  │  │  REDIS_ENDPOINT │   │   External PostgreSQL      │ │ │ │  │  │
+│  │  │  │  │  │  OPENSEARCH_    │   │   HTTPS Ingress            │ │ │ │  │  │
+│  │  │  │  │  │   ENDPOINT set  │   │                            │ │ │ │  │  │
+│  │  │  │  │  └─────────────────┘   └────────────────────────────┘ │ │ │  │  │
+│  │  │  │  │                                                        │ │ │  │  │
+│  │  │  │  │  ┌──────────────┐ ┌──────────────┐ ┌───────────────┐ │ │ │  │  │
+│  │  │  │  │  │ cert-manager │ │ external-dns │ │ ingress-nginx │ │ │ │  │  │
+│  │  │  │  │  └──────────────┘ └──────────────┘ └───────────────┘ │ │ │  │  │
+│  │  │  │  │                                                        │ │ │  │  │
+│  │  │  │  │  (No containerized PG/MinIO/Redis/OpenSearch pods)    │ │ │  │  │
+│  │  │  │  └────────────────────────────────────────────────────────┘ │ │  │  │
+│  │  │  │                                                              │ │  │  │
+│  │  │  │  ┌─── production ns ──────────────────────────────────────┐ │ │  │  │
+│  │  │  │  │  App Deployments + PostgREST sidecar                   │ │ │  │  │
+│  │  │  │  │  Services, Ingress, HPA (2-20)                         │ │ │  │  │
+│  │  │  │  │  Resource Quotas (16 CPU, 32Gi)                        │ │ │  │  │
+│  │  │  │  └────────────────────────────────────────────────────────┘ │ │  │  │
+│  │  │  └──────────────────────────────────────────────────────────────┘ │  │  │
+│  │  │             │                  │                   │               │  │  │
+│  │  │             │ port 5432        │ port 6379         │ port 443     │  │  │
+│  │  │             ▼                  ▼                   ▼               │  │  │
+│  │  │  ┌──────────────────┐ ┌──────────────────┐ ┌───────────────────┐ │  │  │
+│  │  │  │ Aurora Serverless │ │ ElastiCache      │ │ OpenSearch Service│ │  │  │
+│  │  │  │ v2 (PG 16.4)     │ │ Serverless       │ │ plattr-prod-     │ │  │  │
+│  │  │  │ 1-8 ACU          │ │ (Redis 7)        │ │   search         │ │  │  │
+│  │  │  │ plattr DB         │ │ plattr-prod-     │ │ t3.medium.search │ │  │  │
+│  │  │  │                  │ │   redis           │ │ 2 data nodes     │ │  │  │
+│  │  │  └──────────────────┘ └──────────────────┘ └───────────────────┘ │  │  │
+│  │  └──────────────────────────────────────────────────────────────────────┘  │  │
+│  └───────────────────────────────────────────────────────────────────────────┘  │
+│                                                                                 │
+│  ┌─ AWS Services ──────────────────────────────────────────────────────────┐   │
+│  │  ┌──────────┐  ┌───────────────────┐  ┌───────────┐                    │   │
+│  │  │    S3    │  │ Secrets Manager   │  │ Route 53  │                    │   │
+│  │  │          │  │ plattr/aurora-    │  │           │                    │   │
+│  │  │ Bucket/  │  │   admin-prod      │  │ *.prod    │                    │   │
+│  │  │ app/env  │  │                   │  │ .company  │                    │   │
+│  │  │          │  │                   │  │  .dev     │                    │   │
+│  │  └──────────┘  └───────────────────┘  └───────────┘                    │   │
+│  └────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                 │
+│  ┌─ IAM ─────────────────────────────────────────────────────────────────────┐ │
+│  │  plattr-ci-deploy-prod — trusted by non-prod's Prod Deploy Role          │ │
+│  │  plattr-prod-ecr-pull — cross-account ECR pull from non-prod             │ │
+│  │  Operator IRSA Role — S3 + Secrets Manager + STS                          │ │
+│  └────────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+
+## Cross-Account Image Flow
+
+```
+Non-Prod Account                        Prod Account
+┌──────────┐                          ┌──────────────────┐
+│   ECR    │    cross-account pull    │  EKS (prod)      │
+│ plattr-  │ ◄─────────────────────── │  pulls images    │
+│  apps    │    via ECR pull role     │  for production   │
+│ plattr-  │                          │  deployments      │
+│  operator│                          └──────────────────┘
+└──────────┘
+```
 
 
 ## DNS & Traffic Flow
@@ -114,69 +186,72 @@
 
 ## Domain Pattern
 
-  {app}.{baseDomain}                        → production
-  {app}.staging.{baseDomain}                → staging
-  {app}.uat.{baseDomain}                    → uat
-  pr-{N}.{app}.preview.{baseDomain}         → preview
+  {app}.{baseDomain}                        → production (prod account)
+  {app}.staging.{baseDomain}                → staging (non-prod account)
+  {app}.uat.{baseDomain}                    → uat (non-prod account)
+  pr-{N}.{app}.preview.{baseDomain}         → preview (non-prod account)
 
 
 ## Pod Architecture (per app with database)
 
-  ┌──────────────────────────────────────────────┐
-  │                    Pod                        │
-  │                                               │
-  │  ┌─────────────────┐  ┌───────────────────┐  │
-  │  │  App Container   │  │ PostgREST Sidecar │  │
-  │  │  (from ECR)      │  │ v12.2.3           │  │
-  │  │  port: 3000      │  │ port: 3001        │  │
-  │  │                  │  │ 50m CPU, 64Mi mem │  │
-  │  │  Env vars from:  │  │                   │  │
-  │  │  - {name}-db     │  │ Auto-reload via   │  │
-  │  │    (Secret)      │  │ LISTEN/NOTIFY     │  │
-  │  │  - {name}-storage│  │                   │  │
-  │  │    (ConfigMap)   │  │ Schema:           │  │
-  │  │  - {name}-auth   │  │ {env}_{app_name}  │  │
-  │  │    (ConfigMap)   │  │                   │  │
-  │  └─────────────────┘  └───────────────────┘  │
-  └──────────────────────────────────────────────┘
-           │                        │
-           │                        │
-           ▼                        ▼
-     ┌───────────┐          ┌───────────┐
-     │  Service   │          │  Service   │
-     │  port: 80  │          │ port: 3001 │
-     └───────────┘          └───────────┘
-           │                        │
-           ▼                        ▼
-     ┌───────────┐          ┌────────────────┐
-     │  Ingress   │          │ Ingress (API)  │
-     │  {name}    │          │ {name}-api     │
-     │  all paths │          │ /api/rest/*    │
-     └───────────┘          └────────────────┘
+  ┌──────────────────────────────────────────────────────┐
+  │                    Pod                                │
+  │                                                       │
+  │  ┌─────────────────┐  ┌───────────────────┐          │
+  │  │  App Container   │  │ PostgREST Sidecar │          │
+  │  │  (from ECR)      │  │ v12.2.3           │          │
+  │  │  port: 3000      │  │ port: 3001        │          │
+  │  │                  │  │ 50m CPU, 64Mi mem │          │
+  │  │  Env vars from:  │  │                   │          │
+  │  │  - {name}-db     │  │ Auto-reload via   │          │
+  │  │    (Secret)      │  │ LISTEN/NOTIFY     │          │
+  │  │  - {name}-storage│  │                   │          │
+  │  │    (ConfigMap)   │  │ Schema:           │          │
+  │  │  - {name}-auth   │  │ {env}_{app_name}  │          │
+  │  │    (ConfigMap)   │  │                   │          │
+  │  │  - {name}-redis  │  └───────────────────┘          │
+  │  │    (ConfigMap)   │                                  │
+  │  │  - {name}-search │                                  │
+  │  │    (ConfigMap)   │                                  │
+  │  └─────────────────┘                                   │
+  └──────────────────────────────────────────────────────┘
 
 
 ## CDK Stack Breakdown
 
   ┌─────────────────────────────────────────────────────┐
-  │              PlattrInfraStack                        │
-  │  VPC, EKS, Aurora, OIDC, Security Groups            │
-  │  Deploy first — takes 20-30 min                     │
+  │ Non-Prod: PlattrInfraStack                          │
+  │  VPC, EKS (plattr-nonprod), Aurora, OIDC, SGs       │
   └──────────────────────┬──────────────────────────────┘
                          │ outputs: ClusterName, KubectlRoleArn,
                          │          OidcProviderArn, AuroraEndpoint
                          ▼
   ┌─────────────────────────────────────────────────────┐
-  │              PlattrOperatorStack                      │
+  │ Non-Prod: PlattrOperatorStack                       │
   │  plattr-system ns, CRDs, IRSA, Helm chart,          │
   │  cert-manager, external-dns, ingress-nginx,          │
-  │  Keycloak, env namespaces + quotas, ECR (operator)   │
+  │  Keycloak, env namespaces (staging+uat+production)   │
+  └─────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────┐
+  │ Prod: PlattrProdInfraStack                           │
+  │  VPC, EKS (plattr-prod), Aurora (1-8 ACU),          │
+  │  ElastiCache Serverless (Redis 7),                   │
+  │  OpenSearch Service (2-node), SGs, cross-acct ECR    │
   └──────────────────────┬──────────────────────────────┘
-                         │
+                         │ outputs: + RedisEndpoint, OpenSearchEndpoint
                          ▼
   ┌─────────────────────────────────────────────────────┐
-  │              PlattrCicdStack                          │
+  │ Prod: PlattrProdOperatorStack                        │
+  │  plattr-system ns, CRDs, IRSA, Helm chart,          │
+  │  cert-manager, external-dns, ingress-nginx,          │
+  │  Keycloak, production namespace only                 │
+  │  Operator env: REDIS_ENDPOINT, OPENSEARCH_ENDPOINT   │
+  └─────────────────────────────────────────────────────┘
+
+  ┌─────────────────────────────────────────────────────┐
+  │ PlattrCicdStack (non-prod account)                   │
   │  GitHub OIDC provider, ECR (apps),                   │
   │  CI Deploy Role (any branch, non-prod),              │
-  │  Prod Deploy Role (main branch only)                 │
+  │  Prod Deploy Role (main only, cross-account assume)  │
   └─────────────────────────────────────────────────────┘
-```

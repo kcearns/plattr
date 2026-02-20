@@ -13,27 +13,30 @@ This guide covers deploying, operating, and maintaining Plattr. It assumes famil
 
 ## Infrastructure Overview
 
+Plattr uses a **two-account architecture**: non-prod services run containerized on a single EKS cluster, while production runs in a separate AWS account with managed services.
+
 ```
-AWS Account
-├── EKS Cluster
-│   ├── plattr-system namespace
-│   │   ├── Plattr Operator (Deployment)
-│   │   ├── Keycloak (StatefulSet, 2 replicas)
-│   │   ├── cert-manager
-│   │   ├── external-dns
-│   │   └── ingress-nginx (NLB)
-│   ├── production namespace
-│   ├── staging namespace
-│   ├── uat namespace
-│   └── preview-* namespaces (dynamic)
-├── Aurora PostgreSQL (shared, schema-per-app)
+Non-Prod Account                         Prod Account
+├── EKS (plattr-nonprod)                 ├── EKS (plattr-prod)
+│   ├── plattr-system namespace          │   ├── plattr-system namespace
+│   │   ├── Operator (container mode)    │   │   ├── Operator (managed mode)
+│   │   ├── PostgreSQL pod               │   │   ├── Keycloak (StatefulSet)
+│   │   ├── MinIO pod                    │   │   ├── cert-manager, ext-dns, nginx
+│   │   ├── Redis pod                    │   │   └── (no container services)
+│   │   ├── OpenSearch pod               │   ├── production namespace
+│   │   ├── Keycloak pod                 │   └── (no staging/uat/preview)
+│   │   └── cert-manager, ext-dns...     │
+│   ├── staging namespace                ├── Aurora PostgreSQL Serverless v2
+│   ├── uat namespace                    ├── ElastiCache (Redis 7)
+│   └── preview-* namespaces (dynamic)   ├── OpenSearch Service
+│                                         ├── S3
+├── ECR                                   ├── ECR (cross-account pull)
+│   ├── plattr-operator                  └── Route 53
+│   └── plattr-apps
 ├── S3 (bucket-per-app)
-├── ECR
-│   ├── plattr-operator (operator image)
-│   └── plattr-apps (all app images)
 ├── Secrets Manager
-│   └── plattr/db-admin (Aurora admin creds)
-└── Route 53 (DNS, managed by external-dns)
+│   └── plattr/db-admin
+└── Route 53
 ```
 
 ## CDK Deployment
@@ -163,6 +166,36 @@ npx cdk deploy PlattrOperatorStack
 | `installIngressNginx` | `true` | Install ingress-nginx |
 | `installKeycloak` | `true` | Install Keycloak |
 
+#### Option C: Production account (separate AWS account with managed services)
+
+Set `-c target=prod` to deploy production infrastructure with AWS managed services (Aurora, ElastiCache, OpenSearch) in a dedicated account.
+
+```bash
+# Bootstrap the prod account
+npx cdk bootstrap aws://PROD_ACCOUNT_ID/ca-central-1
+
+# Deploy prod infra + operator
+npx cdk deploy PlattrProdInfraStack PlattrProdOperatorStack \
+  -c target=prod \
+  -c account=PROD_ACCOUNT_ID \
+  -c region=ca-central-1 \
+  -c baseDomain=prod.yourcompany.dev \
+  -c hostedZoneId=Z987654321 \
+  -c nonprodAccountId=NONPROD_ACCOUNT_ID
+```
+
+The prod stack creates:
+- **EKS cluster** (`plattr-prod`) with larger worker nodes (t3.xlarge, 2-6)
+- **Aurora Serverless v2** with higher ACUs (1-8 default)
+- **ElastiCache Serverless** (Redis 7) — operator uses `REDIS_ENDPOINT`
+- **OpenSearch Service** (2-node t3.medium.search) — operator uses `OPENSEARCH_ENDPOINT`
+- **Cross-account ECR pull** role for pulling images from non-prod
+- Only the `production` namespace (no staging/uat/preview)
+
+The operator runs in **managed mode**: instead of pointing to in-cluster pods, it creates ConfigMaps with endpoints for the AWS managed services.
+
+See [Production Account Setup](step2-prod-account-setup.md) for the full step-by-step guide.
+
 ### Stack 3: PlattrCicdStack
 
 Sets up CI/CD roles for GitHub Actions.
@@ -183,6 +216,7 @@ npx cdk deploy PlattrCicdStack
 |---|---|---|
 | `githubOrg` | — | GitHub organization name |
 | `githubRepoFilter` | — | Optional repo name filter |
+| `prodAccountId` | — | Production AWS account ID (enables cross-account deploy) |
 
 ## Operator Management
 
@@ -209,6 +243,8 @@ The operator reads configuration from environment variables:
 | `KEYCLOAK_URL` | Keycloak base URL | If auth enabled |
 | `KEYCLOAK_ADMIN_USER` | Keycloak admin username | If auth enabled |
 | `KEYCLOAK_ADMIN_PASSWORD` | Keycloak admin password | If auth enabled |
+| `REDIS_ENDPOINT` | ElastiCache Redis endpoint (managed mode) | No (empty = container mode) |
+| `OPENSEARCH_ENDPOINT` | OpenSearch Service endpoint (managed mode) | No (empty = container mode) |
 | `LEADER_ELECTION` | Enable leader election (`true`/`false`) | No (default: false) |
 | `LEASE_NAMESPACE` | Namespace for leader lease | If leader election on |
 | `AWS_ENDPOINT_URL` | Override AWS endpoint (for LocalStack) | No |

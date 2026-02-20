@@ -297,33 +297,76 @@
 
 ## Environment Promotion Path
 
-  ┌──────────┐    push to    ┌──────────┐   merge to   ┌────────────┐
-  │  Local   │──────────────▶│ Staging  │─────────────▶│ Production │
-  │  (Kind)  │   branch      │  (EKS)   │   main       │   (EKS)    │
-  └──────────┘               └──────────┘               └────────────┘
-       │                          │                          │
-  plattr dev              CI Deploy Role             Prod Deploy Role
-  HTTP, localhost         HTTPS, *.staging.domain    HTTPS, *.domain
-  MinIO, local PG         Aurora, S3, Keycloak       Aurora, S3, Keycloak
-  No scaling              HPA 2-20                   HPA 2-20
+  ┌──────────┐  push to  ┌──────────┐  approve  ┌───────┐  approve  ┌────────────┐
+  │  Local   │──────────▶│ Staging  │─────────▶│  UAT  │─────────▶│ Production │
+  │  (Kind)  │  branch   │  (EKS    │  manual   │ (EKS  │  manual   │ (EKS prod  │
+  └──────────┘           │ nonprod) │           │nonprod│           │  account)  │
+       │                  └──────────┘           └───────┘           └────────────┘
+       │                       │                      │                    │
+  plattr dev            CI Deploy Role          CI Deploy Role      Prod Deploy Role
+  HTTP, localhost       HTTPS, *.staging.       HTTPS, *.uat.       HTTPS, *.prod.
+  Container PG/Redis    Container PG/Redis      Container PG/Redis  Aurora, ElastiCache
+  MinIO, OpenSearch     Container OpenSearch    Container OpenSearch OpenSearch Service
+  No scaling            HPA 2-20               HPA 2-20            HPA 2-20
 
 
-## What Changes Between Local and Staging
+## What Changes Between Environments
 
-  ┌──────────────────────┬──────────────────────┬─────────────────────────┐
-  │     Component        │     Local (Kind)     │     Staging (EKS)       │
-  ├──────────────────────┼──────────────────────┼─────────────────────────┤
-  │ Database             │ PG pod (:5432)       │ Aurora Serverless v2    │
-  │ DB Schema            │ {app_name}           │ staging_{app_name}      │
-  │ Object Storage       │ MinIO (:9000)        │ S3 (IRSA auth)         │
-  │ Auth                 │ Keycloak dev (:8080) │ Keycloak on EKS (HTTPS)│
-  │ Redis                │ Pod (:6379)          │ ⚠ Not yet implemented  │
-  │ OpenSearch           │ Pod (:9200)          │ ⚠ Not yet implemented  │
-  │ TLS                  │ HTTP (no TLS)        │ HTTPS (Let's Encrypt)  │
-  │ DNS                  │ localhost             │ *.staging.{baseDomain} │
-  │ Container Registry   │ localhost:5050        │ ECR                    │
-  │ Scaling              │ Single replica        │ HPA (2-20 replicas)   │
-  │ DB Credentials       │ localdev (static)    │ Random 32-byte hex     │
-  │ Dev Server           │ Native (npx next)    │ Containerized          │
-  └──────────────────────┴──────────────────────┴─────────────────────────┘
+  ┌──────────────────┬──────────────────┬──────────────────┬──────────────────────┐
+  │   Component      │  Local (Kind)    │ Staging/UAT (EKS)│ Production (EKS)     │
+  ├──────────────────┼──────────────────┼──────────────────┼──────────────────────┤
+  │ Database         │ PG pod (:5432)   │ Shared Aurora    │ Dedicated Aurora     │
+  │ DB Schema        │ {app_name}       │ staging_{app}    │ prod_{app}           │
+  │ Object Storage   │ MinIO (:9000)    │ S3 (IRSA)        │ S3 (IRSA)            │
+  │ Auth             │ Keycloak (:8080) │ Keycloak (HTTPS) │ Keycloak (HTTPS)     │
+  │ Redis            │ Pod (:6379)      │ Pod (:6379)      │ ElastiCache Redis 7  │
+  │ OpenSearch       │ Pod (:9200)      │ Pod (:9200)      │ OpenSearch Service   │
+  │ TLS              │ HTTP (no TLS)    │ HTTPS (LE)       │ HTTPS (LE)           │
+  │ DNS              │ localhost         │ *.staging/uat    │ *.prod.{baseDomain}  │
+  │ Registry         │ localhost:5050   │ ECR (nonprod)    │ ECR (cross-account)  │
+  │ Scaling          │ Single replica   │ HPA (2-20)       │ HPA (2-20)           │
+  │ DB Credentials   │ localdev         │ Random 32B hex   │ Random 32B hex       │
+  │ Dev Server       │ Native (npx)    │ Containerized    │ Containerized        │
+  │ AWS Account      │ N/A              │ Non-prod         │ Prod (separate)      │
+  │ Operator Mode    │ Local            │ Container mode   │ Managed mode         │
+  └──────────────────┴──────────────────┴──────────────────┴──────────────────────┘
+
+
+## Production Deployment Flow (cross-account)
+
+  GitHub Actions (main branch merge)
+         │
+         ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  Production Job                                                 │
+  │                                                                 │
+  │  1. Assume AWS_ROLE_ARN_PROD (prod deploy role)                │
+  │     └── Non-prod role → sts:AssumeRole → prod account role     │
+  │                                                                 │
+  │  2. aws eks update-kubeconfig --name plattr-prod                │
+  │     └── Targets the prod account's EKS cluster                 │
+  │                                                                 │
+  │  3. kubectl apply Application CR                                │
+  │     └── namespace: production                                   │
+  │     └── imageRef: ECR image from non-prod (cross-account pull) │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+         │
+         ▼
+  ┌─────────────────────────────────────────────────────────────────┐
+  │  Prod EKS Cluster — Operator Reconciliation                     │
+  │                                                                 │
+  │  Operator runs in MANAGED MODE (env vars set by CDK):          │
+  │    REDIS_ENDPOINT → ElastiCache serverless endpoint            │
+  │    OPENSEARCH_ENDPOINT → OpenSearch Service domain endpoint    │
+  │                                                                 │
+  │  Reconciliation:                                                │
+  │    ① reconcileDatabase — Aurora (dedicated prod instance)       │
+  │    ② reconcileStorage  — S3 buckets                            │
+  │    ③ reconcileAuth     — Keycloak (on prod EKS)                │
+  │    ④ reconcileRedis    — ConfigMap → ElastiCache endpoint      │
+  │    ⑤ reconcileOpenSearch — ConfigMap → OpenSearch endpoint     │
+  │    ⑥ reconcileWorkload — Deployment + PostgREST + envFrom      │
+  │    ⑦ reconcileStatus   — Conditions + phase                    │
+  └─────────────────────────────────────────────────────────────────┘
 ```

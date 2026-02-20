@@ -67,10 +67,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name plattr-nonprod --region ${{ env.AWS_REGION }}
+
       - name: Deploy preview
         run: |
-          # kubectl apply PreviewEnvironment CRD
-          echo "Deploying preview for PR #${{ github.event.pull_request.number }}"
+          kubectl apply -f - <<EOF
+          apiVersion: platform.internal/v1alpha1
+          kind: PreviewEnvironment
+          metadata:
+            name: ${{ env.APP_NAME }}-pr-${{ github.event.pull_request.number }}
+            namespace: plattr-system
+          spec:
+            applicationRef: ${{ env.APP_NAME }}
+            pullRequest: ${{ github.event.pull_request.number }}
+            branch: ${{ github.head_ref }}
+            imageRef: ${{ env.ECR_REGISTRY }}/plattr-apps:${{ needs.build.outputs.image-tag }}
+            ttl: 72h
+          EOF
 
       - name: Comment PR
         uses: actions/github-script@v7
@@ -96,10 +110,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name plattr-nonprod --region ${{ env.AWS_REGION }}
+
       - name: Deploy to staging
         run: |
-          # kubectl apply Application CRD with environment=staging
-          echo "Deploying to staging"
+          kubectl apply -f - <<EOF
+          apiVersion: platform.internal/v1alpha1
+          kind: Application
+          metadata:
+            name: ${{ env.APP_NAME }}
+            namespace: staging
+          spec:
+            repository: ${{ github.repository }}
+            branch: main
+            framework: __FRAMEWORK__
+            environment: staging
+            imageRef: ${{ env.ECR_REGISTRY }}/plattr-apps:${{ needs.build.outputs.image-tag }}
+          EOF
 
   # UAT (manual approval)
   uat:
@@ -114,25 +142,53 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name plattr-nonprod --region ${{ env.AWS_REGION }}
+
       - name: Deploy to UAT
         run: |
-          # kubectl apply Application CRD with environment=uat
-          echo "Deploying to UAT"
+          kubectl apply -f - <<EOF
+          apiVersion: platform.internal/v1alpha1
+          kind: Application
+          metadata:
+            name: ${{ env.APP_NAME }}
+            namespace: uat
+          spec:
+            repository: ${{ github.repository }}
+            branch: main
+            framework: __FRAMEWORK__
+            environment: uat
+            imageRef: ${{ env.ECR_REGISTRY }}/plattr-apps:${{ needs.build.outputs.image-tag }}
+          EOF
 
-  # Production (manual approval)
+  # Production (manual approval, separate AWS account)
   production:
     needs: uat
     runs-on: ubuntu-latest
     environment:
       name: production
     steps:
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (prod account)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Update kubeconfig (prod cluster)
+        run: aws eks update-kubeconfig --name plattr-prod --region ${{ env.AWS_REGION }}
+
       - name: Deploy to production
         run: |
-          # kubectl apply Application CRD with environment=production
-          echo "Deploying to production"
+          kubectl apply -f - <<EOF
+          apiVersion: platform.internal/v1alpha1
+          kind: Application
+          metadata:
+            name: ${{ env.APP_NAME }}
+            namespace: production
+          spec:
+            repository: ${{ github.repository }}
+            branch: main
+            framework: __FRAMEWORK__
+            environment: production
+            imageRef: ${{ env.ECR_REGISTRY }}/plattr-apps:${{ needs.build.outputs.image-tag }}
+          EOF
