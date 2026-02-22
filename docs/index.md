@@ -36,6 +36,7 @@ plattr deploy local
 
 ## Documentation
 
+- [Tutorial](tutorial.md) — End-to-end walkthrough: set up a cluster, build and deploy an app
 - [Developer Guide](developer-guide.md) — Building apps, local dev, deploying
 - [Plattr Team Guide](plattr-team-guide.md) — Infrastructure, operations, troubleshooting
 - **Reference**

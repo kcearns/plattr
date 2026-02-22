@@ -8,6 +8,7 @@ All 13 stages of development are complete.
 
 ## Documentation
 
+- [Tutorial](docs/tutorial.md) — End-to-end walkthrough: set up a cluster, build and deploy an app
 - [Developer Guide](docs/developer-guide.md) — Building apps, local dev, deploying
 - [Plattr Team Guide](docs/plattr-team-guide.md) — Infrastructure, operations, troubleshooting
 - [plattr.yaml Reference](docs/reference/plattr-yaml.md)
