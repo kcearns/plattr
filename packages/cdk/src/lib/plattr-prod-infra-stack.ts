@@ -118,6 +118,7 @@ export class PlattrProdInfraStack extends cdk.Stack {
       description: 'Plattr prod Aurora PostgreSQL security group',
       allowAllOutbound: false,
     });
+    this.auroraSecurityGroup.applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
 
     this.auroraSecurityGroup.addIngressRule(
       this.cluster.clusterSecurityGroup,
@@ -151,6 +152,7 @@ export class PlattrProdInfraStack extends cdk.Stack {
       description: 'Plattr prod ElastiCache Redis security group',
       allowAllOutbound: false,
     });
+    this.elasticacheSecurityGroup.applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
 
     this.elasticacheSecurityGroup.addIngressRule(
       this.cluster.clusterSecurityGroup,
@@ -182,6 +184,7 @@ export class PlattrProdInfraStack extends cdk.Stack {
       description: 'Plattr prod OpenSearch security group',
       allowAllOutbound: false,
     });
+    this.opensearchSecurityGroup.applyRemovalPolicy(cdk.RemovalPolicy.RETAIN);
 
     this.opensearchSecurityGroup.addIngressRule(
       this.cluster.clusterSecurityGroup,

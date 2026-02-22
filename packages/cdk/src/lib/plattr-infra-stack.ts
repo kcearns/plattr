@@ -129,7 +129,7 @@ export class PlattrInfraStack extends cdk.Stack {
       credentials: rds.Credentials.fromGeneratedSecret('plattr_admin', {
         secretName: 'plattr/aurora-admin',
       }),
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       storageEncrypted: true,
     });
 
