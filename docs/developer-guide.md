@@ -105,6 +105,9 @@ All services start only if enabled in `plattr.yaml`. A static site with no datab
 ### Managing Infrastructure
 
 ```bash
+# Generate AWS CDK config interactively (for deploying to AWS)
+plattr infra init
+
 # Check infrastructure status
 plattr infra status
 

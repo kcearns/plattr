@@ -30,12 +30,15 @@ const env = { account: ACCOUNT, region: REGION };
 
 const target = app.node.tryGetContext('target');
 const useInfraStack = app.node.tryGetContext('useInfraStack') === 'true';
+const azString: string | undefined = app.node.tryGetContext('availabilityZones');
+const availabilityZones = azString ? azString.split(',').map(s => s.trim()) : undefined;
 
 if (target === 'prod') {
   // ─── Production Account ─────────────────────────────────────────────
   // Separate EKS cluster with AWS managed services (Aurora, ElastiCache, OpenSearch)
   const prodInfra = new PlattrProdInfraStack(app, 'PlattrProdInfraStack', {
     env,
+    availabilityZones,
     clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-prod',
     nodeInstanceType: app.node.tryGetContext('nodeInstanceType') || undefined,
     nodeMinSize: numberOrUndefined(app.node.tryGetContext('nodeMinSize')),
@@ -71,6 +74,7 @@ if (target === 'prod') {
   // ─── Non-Prod: CDK-managed infrastructure ───────────────────────────
   const infra = new PlattrInfraStack(app, 'PlattrInfraStack', {
     env,
+    availabilityZones,
     clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-nonprod',
     nodeInstanceType: app.node.tryGetContext('nodeInstanceType') || undefined,
     nodeMinSize: numberOrUndefined(app.node.tryGetContext('nodeMinSize')),

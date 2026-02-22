@@ -43,14 +43,26 @@ Non-Prod Account                         Prod Account
 
 The infrastructure is defined in three CDK stacks. All commands run from `packages/cdk`.
 
+### Quick Start with `plattr infra init`
+
+The fastest way to configure CDK context values is the interactive init command:
+
+```bash
+plattr infra init
+```
+
+This walks you through environment type, AWS account/region, cluster sizing, domain config, and add-ons, then writes a `packages/cdk/cdk.json` with all values populated. After that:
+
 ```bash
 cd packages/cdk
 npm install
+npx cdk bootstrap
+npx cdk deploy --all
 ```
 
-### Deployment Modes
+### Manual Deployment Modes
 
-There are two ways to deploy Plattr depending on whether you want CDK to manage the foundational infrastructure (VPC, EKS, Aurora) or you're bringing your own.
+Alternatively, you can pass context values directly via `-c` flags. There are two modes depending on whether you want CDK to manage the foundational infrastructure (VPC, EKS, Aurora) or you're bringing your own.
 
 #### Option A: CDK-managed infrastructure (recommended for new environments)
 

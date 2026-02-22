@@ -1,3 +1,24 @@
 {
-  "app": "npx ts-node bin/plattr.ts"
+  "app": "npx ts-node bin/plattr.ts",
+  "context": {
+    "target": "nonprod",
+    "account": "786248294986",
+    "region": "us-east-1",
+    "baseDomain": "clickdevhq.xyz",
+    "hostedZoneId": "Z03279211NR41SXSMH876",
+    "githubOrg": "kcearns",
+    "installCertManager": "false",
+    "installExternalDns": "false",
+    "installIngressNginx": "false",
+    "installKeycloak": "false",
+    "useInfraStack": "true",
+    "eksClusterName": "plattr-nonprod",
+    "availabilityZones": "us-east-1b,us-east-1c",
+    "nodeInstanceType": "t3.medium",
+    "nodeMinSize": "2",
+    "nodeMaxSize": "4",
+    "nodeDesiredSize": "2",
+    "auroraMinCapacity": "0.5",
+    "auroraMaxCapacity": "4"
+  }
 }

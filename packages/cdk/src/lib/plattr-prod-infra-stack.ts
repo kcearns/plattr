@@ -9,6 +9,8 @@ import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
 import { Construct } from 'constructs';
 
 export interface PlattrProdInfraStackProps extends cdk.StackProps {
+  /** Availability zones to use (default: CDK picks first 2 in region) */
+  availabilityZones?: string[];
   /** EKS cluster name (default: 'plattr-prod') */
   clusterName?: string;
   /** EC2 instance type for worker nodes (default: 't3.xlarge') */
@@ -40,8 +42,16 @@ export class PlattrProdInfraStack extends cdk.Stack {
   public readonly redisEndpoint: string;
   public readonly opensearchEndpoint: string;
 
+  private readonly _availabilityZones?: string[];
+
+  get availabilityZones(): string[] {
+    return this._availabilityZones ?? super.availabilityZones;
+  }
+
   constructor(scope: Construct, id: string, props: PlattrProdInfraStackProps = {}) {
     super(scope, id, props);
+
+    this._availabilityZones = props.availabilityZones;
 
     const clusterName = props.clusterName ?? 'plattr-prod';
     const nodeInstanceType = props.nodeInstanceType ?? 't3.xlarge';

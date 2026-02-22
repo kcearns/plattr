@@ -7,7 +7,7 @@ import { testCommand, testCiCommand } from './commands/test';
 import { buildCommand } from './commands/build';
 import { previewCommand, previewListCommand } from './commands/preview';
 import { dbMigrateCommand, dbShellCommand, dbSeedCommand, dbConnectCommand } from './commands/db';
-import { infraStatusCommand, infraStopCommand, infraStartCommand, infraDestroyCommand, dbResetCommand, redisResetCommand, searchResetCommand } from './commands/infra';
+import { infraStatusCommand, infraStopCommand, infraStartCommand, infraDestroyCommand, infraInitCommand, dbResetCommand, redisResetCommand, searchResetCommand } from './commands/infra';
 import { deployLocalCommand, undeployLocalCommand } from './commands/deploy-local';
 import { statusCommand } from './commands/status';
 import { logsCommand } from './commands/logs';
@@ -70,6 +70,11 @@ undeploy
 
 // --- Infrastructure ---
 const infra = program.command('infra').description('Local infrastructure management');
+
+infra
+  .command('init')
+  .description('Initialize AWS infrastructure configuration (generates cdk.json)')
+  .action(() => infraInitCommand());
 
 infra
   .command('status')

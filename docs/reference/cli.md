@@ -174,6 +174,32 @@ Kills tracked port-forward processes and deletes the Deployment, Service, and Co
 
 ---
 
+### `plattr infra init`
+
+Interactively generate AWS infrastructure configuration.
+
+```bash
+plattr infra init
+```
+
+Walks through a guided setup to collect AWS account, region, EKS cluster settings, domain configuration, and add-on preferences. Writes a `packages/cdk/cdk.json` with all CDK context values populated, replacing the need to pass individual `-c` flags to `cdk deploy`.
+
+Supports two environment types:
+
+- **Non-prod** — choose between CDK-managed infrastructure (new VPC + EKS + Aurora) or connecting to existing infrastructure (provide ARNs and endpoints).
+- **Production** — configures EKS, Aurora, OpenSearch, and optional cross-account settings.
+
+After running, follow the printed next steps to bootstrap and deploy:
+
+```bash
+cd packages/cdk
+npm install
+npx cdk bootstrap
+npx cdk deploy --all
+```
+
+---
+
 ### `plattr infra status`
 
 Show local infrastructure status.

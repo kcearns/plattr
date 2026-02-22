@@ -2,6 +2,8 @@ import { execSync } from 'child_process';
 import { loadConfig } from '../lib/config';
 import { clearState } from '../lib/state';
 
+export { infraInitCommand } from './infra-init';
+
 const NAMESPACE = 'plattr-local';
 const CLUSTER_NAME = 'plattr';
 

@@ -7,6 +7,8 @@ import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
 import { Construct } from 'constructs';
 
 export interface PlattrInfraStackProps extends cdk.StackProps {
+  /** Availability zones to use (default: CDK picks first 2 in region) */
+  availabilityZones?: string[];
   /** EKS cluster name (default: 'plattr-nonprod') */
   clusterName?: string;
   /** EC2 instance type for worker nodes (default: 't3.large') */
@@ -31,8 +33,16 @@ export class PlattrInfraStack extends cdk.Stack {
   /** The Aurora security group */
   public readonly auroraSecurityGroup: ec2.SecurityGroup;
 
+  private readonly _availabilityZones?: string[];
+
+  get availabilityZones(): string[] {
+    return this._availabilityZones ?? super.availabilityZones;
+  }
+
   constructor(scope: Construct, id: string, props: PlattrInfraStackProps = {}) {
     super(scope, id, props);
+
+    this._availabilityZones = props.availabilityZones;
 
     const clusterName = props.clusterName ?? 'plattr-nonprod';
     const nodeInstanceType = props.nodeInstanceType ?? 't3.large';
