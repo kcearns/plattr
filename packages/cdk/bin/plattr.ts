@@ -40,10 +40,6 @@ if (target === 'prod') {
     env,
     availabilityZones,
     clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-prod',
-    nodeInstanceType: app.node.tryGetContext('nodeInstanceType') || undefined,
-    nodeMinSize: numberOrUndefined(app.node.tryGetContext('nodeMinSize')),
-    nodeMaxSize: numberOrUndefined(app.node.tryGetContext('nodeMaxSize')),
-    nodeDesiredSize: numberOrUndefined(app.node.tryGetContext('nodeDesiredSize')),
     auroraMinCapacity: numberOrUndefined(app.node.tryGetContext('auroraMinCapacity')),
     auroraMaxCapacity: numberOrUndefined(app.node.tryGetContext('auroraMaxCapacity')),
     opensearchInstanceType: app.node.tryGetContext('opensearchInstanceType') || undefined,
@@ -54,17 +50,18 @@ if (target === 'prod') {
   new PlattrOperatorStack(app, 'PlattrProdOperatorStack', {
     env,
     eksClusterName: prodInfra.cluster.clusterName,
-    kubectlRoleArn: prodInfra.cluster.kubectlRole!.roleArn,
-    oidcProviderArn: prodInfra.cluster.openIdConnectProvider.openIdConnectProviderArn,
+    kubectlRoleArn: prodInfra.kubectlRole.roleArn,
+    oidcProviderArn: prodInfra.oidcProviderArn,
     auroraClusterEndpoint: prodInfra.auroraCluster.clusterEndpoint.hostname,
     auroraSecurityGroupId: prodInfra.auroraSecurityGroup.securityGroupId,
+    operatorEcrRepoUri: prodInfra.operatorEcrRepo.repositoryUri,
     baseDomain:
       app.node.tryGetContext('baseDomain') || 'prod.company.dev',
     hostedZoneId:
       app.node.tryGetContext('hostedZoneId') || 'Z0123456789',
     installCertManager: app.node.tryGetContext('installCertManager') !== 'false',
     installExternalDns: app.node.tryGetContext('installExternalDns') !== 'false',
-    installIngressNginx: app.node.tryGetContext('installIngressNginx') !== 'false',
+    installTraefik: app.node.tryGetContext('installTraefik') !== 'false',
     installKeycloak: app.node.tryGetContext('installKeycloak') !== 'false',
     redisEndpoint: prodInfra.redisEndpoint,
     opensearchEndpoint: prodInfra.opensearchEndpoint,
@@ -76,10 +73,6 @@ if (target === 'prod') {
     env,
     availabilityZones,
     clusterName: app.node.tryGetContext('eksClusterName') || 'plattr-nonprod',
-    nodeInstanceType: app.node.tryGetContext('nodeInstanceType') || undefined,
-    nodeMinSize: numberOrUndefined(app.node.tryGetContext('nodeMinSize')),
-    nodeMaxSize: numberOrUndefined(app.node.tryGetContext('nodeMaxSize')),
-    nodeDesiredSize: numberOrUndefined(app.node.tryGetContext('nodeDesiredSize')),
     auroraMinCapacity: numberOrUndefined(app.node.tryGetContext('auroraMinCapacity')),
     auroraMaxCapacity: numberOrUndefined(app.node.tryGetContext('auroraMaxCapacity')),
   });
@@ -87,17 +80,18 @@ if (target === 'prod') {
   new PlattrOperatorStack(app, 'PlattrOperatorStack', {
     env,
     eksClusterName: infra.cluster.clusterName,
-    kubectlRoleArn: infra.cluster.kubectlRole!.roleArn,
-    oidcProviderArn: infra.cluster.openIdConnectProvider.openIdConnectProviderArn,
+    kubectlRoleArn: infra.kubectlRole.roleArn,
+    oidcProviderArn: infra.oidcProviderArn,
     auroraClusterEndpoint: infra.auroraCluster.clusterEndpoint.hostname,
     auroraSecurityGroupId: infra.auroraSecurityGroup.securityGroupId,
+    operatorEcrRepoUri: infra.operatorEcrRepo.repositoryUri,
     baseDomain:
       app.node.tryGetContext('baseDomain') || 'platform.company.dev',
     hostedZoneId:
       app.node.tryGetContext('hostedZoneId') || 'Z0123456789',
     installCertManager: app.node.tryGetContext('installCertManager') !== 'false',
     installExternalDns: app.node.tryGetContext('installExternalDns') !== 'false',
-    installIngressNginx: app.node.tryGetContext('installIngressNginx') !== 'false',
+    installTraefik: app.node.tryGetContext('installTraefik') !== 'false',
     installKeycloak: app.node.tryGetContext('installKeycloak') !== 'false',
   });
 } else {
@@ -116,13 +110,15 @@ if (target === 'prod') {
       'your-aurora-cluster.xxxxx.ca-central-1.rds.amazonaws.com',
     auroraSecurityGroupId:
       app.node.tryGetContext('auroraSgId') || 'sg-xxxxx',
+    operatorEcrRepoUri:
+      app.node.tryGetContext('operatorEcrRepoUri') || `${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/plattr-operator`,
     baseDomain:
       app.node.tryGetContext('baseDomain') || 'platform.company.dev',
     hostedZoneId:
       app.node.tryGetContext('hostedZoneId') || 'Z0123456789',
     installCertManager: app.node.tryGetContext('installCertManager') !== 'false',
     installExternalDns: app.node.tryGetContext('installExternalDns') !== 'false',
-    installIngressNginx: app.node.tryGetContext('installIngressNginx') !== 'false',
+    installTraefik: app.node.tryGetContext('installTraefik') !== 'false',
     installKeycloak: app.node.tryGetContext('installKeycloak') !== 'false',
   });
 }

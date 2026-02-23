@@ -17,8 +17,8 @@
 │  │             │                       │                                     │  │
 │  │  ┌─ Private Subnets ───────────────┼─────────────────────────────────┐  │  │
 │  │  │  ┌───────┴───────────────────────┴──────────────────────────────┐ │  │  │
-│  │  │  │                EKS Cluster: plattr-nonprod (K8s 1.31)        │ │  │  │
-│  │  │  │              Managed Node Group: t3.large (2-4)              │ │  │  │
+│  │  │  │                EKS Cluster: plattr-nonprod (K8s 1.33)        │ │  │  │
+│  │  │  │              Auto Mode (system + general-purpose pools)      │ │  │  │
 │  │  │  │              OIDC Provider (for IRSA)                        │ │  │  │
 │  │  │  │                                                              │ │  │  │
 │  │  │  │  ┌────────────────── plattr-system ns ────────────────────┐ │ │  │  │
@@ -88,8 +88,8 @@
 │  │             │                       │                                     │  │
 │  │  ┌─ Private Subnets ───────────────┼─────────────────────────────────┐  │  │
 │  │  │  ┌───────┴───────────────────────┴──────────────────────────────┐ │  │  │
-│  │  │  │                EKS Cluster: plattr-prod (K8s 1.31)           │ │  │  │
-│  │  │  │              Managed Node Group: t3.xlarge (2-6)             │ │  │  │
+│  │  │  │                EKS Cluster: plattr-prod (K8s 1.33)           │ │  │  │
+│  │  │  │              Auto Mode (system + general-purpose pools)      │ │  │  │
 │  │  │  │              OIDC Provider (for IRSA)                        │ │  │  │
 │  │  │  │                                                              │ │  │  │
 │  │  │  │  ┌────────────────── plattr-system ns ────────────────────┐ │ │  │  │

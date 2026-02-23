@@ -126,7 +126,7 @@ export async function infraInitCommand() {
   const addons = await prompts([
     { type: 'confirm', name: 'installCertManager', message: 'Install cert-manager?', initial: ctxBool(prev, 'installCertManager', true) },
     { type: 'confirm', name: 'installExternalDns', message: 'Install external-dns?', initial: ctxBool(prev, 'installExternalDns', true) },
-    { type: 'confirm', name: 'installIngressNginx', message: 'Install ingress-nginx?', initial: ctxBool(prev, 'installIngressNginx', true) },
+    { type: 'confirm', name: 'installTraefik', message: 'Install Traefik?', initial: ctxBool(prev, 'installTraefik', true) },
     { type: 'confirm', name: 'installKeycloak', message: 'Install Keycloak?', initial: ctxBool(prev, 'installKeycloak', true) },
   ]);
 
@@ -145,12 +145,32 @@ export async function infraInitCommand() {
   writeFileSync(CDK_JSON_PATH, JSON.stringify(cdkJson, null, 2) + '\n');
   console.log(`\nWrote ${path.relative(process.cwd(), CDK_JSON_PATH)}`);
 
-  const stacks = result.stacks.join(' ');
+  const region = common.region;
+  const account = common.account;
+  const ecrRepo = `${account}.dkr.ecr.${region}.amazonaws.com/plattr-operator`;
+  const infraStack = result.stacks[0];
+  const operatorStack = result.stacks.find(s => s.includes('Operator'));
+  const cicdStack = result.stacks.find(s => s.includes('Cicd'));
+
   console.log('\nNext steps:');
   console.log('  cd packages/cdk');
   console.log('  npm install');
-  console.log(`  npx cdk bootstrap aws://${common.account}/${common.region}`);
-  console.log(`  npx cdk deploy ${stacks}`);
+  console.log(`  npx cdk bootstrap aws://${account}/${region}`);
+  console.log(`\n  # 1. Deploy infrastructure (VPC, EKS, Aurora, ECR)`);
+  console.log(`  npx cdk deploy ${infraStack}`);
+  console.log(`\n  # 2. Build and push operator image`);
+  console.log(`  aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account}.dkr.ecr.${region}.amazonaws.com`);
+  console.log(`  cd ../.. && docker build -f packages/operator/Dockerfile -t ${ecrRepo}:0.1.0 .`);
+  console.log(`  docker push ${ecrRepo}:0.1.0`);
+  console.log(`  cd packages/cdk`);
+  if (operatorStack) {
+    console.log(`\n  # 3. Deploy operator and add-ons`);
+    console.log(`  npx cdk deploy ${operatorStack}`);
+  }
+  if (cicdStack) {
+    console.log(`\n  # 4. Deploy CI/CD pipeline`);
+    console.log(`  npx cdk deploy ${cicdStack}`);
+  }
 }
 
 interface InitResult {
@@ -190,10 +210,6 @@ async function collectNonprod(
         message: 'Availability zones? (comma-separated, e.g. us-east-1b,us-east-1c — leave blank for auto)',
         initial: ctx(prev, 'availabilityZones', ''),
       },
-      { type: 'text', name: 'nodeInstanceType', message: 'Node instance type?', initial: ctx(prev, 'nodeInstanceType', 't3.large') },
-      { type: 'number', name: 'nodeMinSize', message: 'Node min count?', initial: ctxNum(prev, 'nodeMinSize', 2) },
-      { type: 'number', name: 'nodeMaxSize', message: 'Node max count?', initial: ctxNum(prev, 'nodeMaxSize', 4) },
-      { type: 'number', name: 'nodeDesiredSize', message: 'Node desired count?', initial: ctxNum(prev, 'nodeDesiredSize', 2) },
       { type: 'number', name: 'auroraMinCapacity', message: 'Aurora min ACU?', initial: ctxNum(prev, 'auroraMinCapacity', 0.5), float: true },
       { type: 'number', name: 'auroraMaxCapacity', message: 'Aurora max ACU?', initial: ctxNum(prev, 'auroraMaxCapacity', 4) },
     ]);
@@ -206,10 +222,6 @@ async function collectNonprod(
         useInfraStack: 'true',
         eksClusterName: cluster.eksClusterName,
         ...(cluster.availabilityZones ? { availabilityZones: cluster.availabilityZones } : {}),
-        nodeInstanceType: cluster.nodeInstanceType,
-        nodeMinSize: String(cluster.nodeMinSize),
-        nodeMaxSize: String(cluster.nodeMaxSize),
-        nodeDesiredSize: String(cluster.nodeDesiredSize),
         auroraMinCapacity: String(cluster.auroraMinCapacity),
         auroraMaxCapacity: String(cluster.auroraMaxCapacity),
       },
@@ -284,10 +296,6 @@ async function collectProd(
       message: 'Availability zones? (comma-separated, e.g. us-east-1b,us-east-1c — leave blank for auto)',
       initial: ctx(prev, 'availabilityZones', ''),
     },
-    { type: 'text', name: 'nodeInstanceType', message: 'Node instance type?', initial: ctx(prev, 'nodeInstanceType', 't3.xlarge') },
-    { type: 'number', name: 'nodeMinSize', message: 'Node min count?', initial: ctxNum(prev, 'nodeMinSize', 2) },
-    { type: 'number', name: 'nodeMaxSize', message: 'Node max count?', initial: ctxNum(prev, 'nodeMaxSize', 6) },
-    { type: 'number', name: 'nodeDesiredSize', message: 'Node desired count?', initial: ctxNum(prev, 'nodeDesiredSize', 3) },
     { type: 'number', name: 'auroraMinCapacity', message: 'Aurora min ACU?', initial: ctxNum(prev, 'auroraMinCapacity', 1) },
     { type: 'number', name: 'auroraMaxCapacity', message: 'Aurora max ACU?', initial: ctxNum(prev, 'auroraMaxCapacity', 8) },
     { type: 'text', name: 'opensearchInstanceType', message: 'OpenSearch instance type?', initial: ctx(prev, 'opensearchInstanceType', 't3.medium.search') },
@@ -305,10 +313,6 @@ async function collectProd(
       ...base,
       eksClusterName: cluster.eksClusterName,
       ...(cluster.availabilityZones ? { availabilityZones: cluster.availabilityZones } : {}),
-      nodeInstanceType: cluster.nodeInstanceType,
-      nodeMinSize: String(cluster.nodeMinSize),
-      nodeMaxSize: String(cluster.nodeMaxSize),
-      nodeDesiredSize: String(cluster.nodeDesiredSize),
       auroraMinCapacity: String(cluster.auroraMinCapacity),
       auroraMaxCapacity: String(cluster.auroraMaxCapacity),
       opensearchInstanceType: cluster.opensearchInstanceType,
@@ -335,7 +339,7 @@ function buildCommonContext(
     ...(common.githubRepoFilter ? { githubRepoFilter: common.githubRepoFilter } : {}),
     installCertManager: String(addons.installCertManager),
     installExternalDns: String(addons.installExternalDns),
-    installIngressNginx: String(addons.installIngressNginx),
+    installTraefik: String(addons.installTraefik),
     installKeycloak: String(addons.installKeycloak),
   };
 }

@@ -114,7 +114,7 @@ npx cdk deploy PlattrInfraStack -c useInfraStack=true
 
 **What it creates:**
 - **VPC** with public/private subnets across 2 AZs, 1 NAT gateway
-- **EKS cluster** (K8s 1.31) with a managed node group (t3.large, 2-4 nodes, ON_DEMAND)
+- **EKS cluster** (K8s 1.33) with Auto Mode (compute fully managed by EKS)
 - **kubectl IAM role** for CDK and manual cluster access
 - **OIDC provider** for IRSA (auto-enabled by the EKS construct)
 - **Aurora Serverless v2** (PostgreSQL 16.4, 0.5-4 ACU scaling, `plattr` default database)
@@ -135,10 +135,6 @@ npx cdk deploy PlattrInfraStack -c useInfraStack=true
 | Context key | Default | Description |
 |---|---|---|
 | `eksClusterName` | `plattr-nonprod` | EKS cluster name |
-| `nodeInstanceType` | `t3.large` | EC2 instance type for worker nodes |
-| `nodeMinSize` | `2` | Minimum node group size |
-| `nodeMaxSize` | `4` | Maximum node group size |
-| `nodeDesiredSize` | `2` | Desired node group size |
 | `auroraMinCapacity` | `0.5` | Aurora Serverless v2 min ACU |
 | `auroraMaxCapacity` | `4` | Aurora Serverless v2 max ACU |
 
@@ -197,7 +193,7 @@ npx cdk deploy PlattrProdInfraStack PlattrProdOperatorStack \
 ```
 
 The prod stack creates:
-- **EKS cluster** (`plattr-prod`) with larger worker nodes (t3.xlarge, 2-6)
+- **EKS cluster** (`plattr-prod`) with Auto Mode (compute fully managed by EKS)
 - **Aurora Serverless v2** with higher ACUs (1-8 default)
 - **ElastiCache Serverless** (Redis 7) — operator uses `REDIS_ENDPOINT`
 - **OpenSearch Service** (2-node t3.medium.search) — operator uses `OPENSEARCH_ENDPOINT`

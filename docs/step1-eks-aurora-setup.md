@@ -33,8 +33,7 @@ You should see your account ID and ARN.
 | Resource | Purpose |
 |----------|---------|
 | VPC with public/private subnets | Network isolation for EKS and Aurora |
-| EKS cluster (1.31) | Runs the Plattr operator and app workloads |
-| Managed node group (t3.large) | Worker nodes for pods |
+| EKS cluster (1.33, Auto Mode) | Runs the Plattr operator and app workloads |
 | OIDC provider | Enables IRSA (IAM Roles for Service Accounts) |
 | Aurora PostgreSQL Serverless v2 | Database backend for the operator |
 | Security group rule | Allows EKS pods to connect to Aurora |
@@ -76,12 +75,10 @@ This takes 20-30 minutes (EKS cluster creation is the bottleneck).
 | Context key | Default | Description |
 |-------------|---------|-------------|
 | `eksClusterName` | `plattr-nonprod` | EKS cluster name |
-| `nodeInstanceType` | `t3.large` | EC2 instance type for workers |
-| `nodeMinSize` | `2` | Minimum node count |
-| `nodeMaxSize` | `4` | Maximum node count |
-| `nodeDesiredSize` | `2` | Desired node count |
 | `auroraMinCapacity` | `0.5` | Aurora Serverless v2 min ACU |
 | `auroraMaxCapacity` | `4` | Aurora Serverless v2 max ACU |
+
+EKS Auto Mode manages compute automatically — no instance types or node counts to configure.
 
 Example with overrides:
 
@@ -91,7 +88,6 @@ npx cdk deploy PlattrInfraStack \
   -c account=123456789012 \
   -c region=us-east-1 \
   -c eksClusterName=plattr-dev \
-  -c nodeInstanceType=t3.medium \
   -c auroraMinCapacity=0.5 \
   -c auroraMaxCapacity=2
 ```
@@ -108,7 +104,7 @@ aws eks update-kubeconfig \
 kubectl get nodes
 ```
 
-You should see 2 nodes in `Ready` state.
+You should see nodes provisioned by EKS Auto Mode in `Ready` state.
 
 ### 5. Test Aurora connectivity
 
@@ -152,13 +148,13 @@ npx cdk deploy PlattrOperatorStack \
 
 | Resource | Approximate Monthly Cost |
 |----------|-------------------------|
-| EKS control plane | ~$73 |
-| 2x t3.large nodes | ~$120 |
+| EKS control plane + Auto Mode | ~$73 |
+| Auto Mode compute (scales with workload) | varies |
 | Aurora Serverless v2 (0.5 ACU min) | ~$44 |
 | NAT Gateway | ~$32 |
-| **Total** | **~$270/month** |
+| **Total (idle)** | **~$150/month** |
 
-> Scale down when not in use: set node group to 0 and Aurora min capacity to 0 to reduce costs to ~$105/month (control plane + NAT).
+> With Auto Mode, compute scales to zero when no workloads are running. Set Aurora min capacity to 0 to further reduce idle costs.
 
 ---
 
@@ -196,17 +192,20 @@ export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 eksctl create cluster \
   --name $CLUSTER_NAME \
   --region $AWS_REGION \
-  --version 1.31 \
-  --nodegroup-name plattr-workers \
-  --node-type t3.large \
-  --nodes 2 \
-  --nodes-min 2 \
-  --nodes-max 4 \
-  --managed \
+  --version 1.33 \
+  --without-nodegroup \
   --with-oidc
+
+# Enable Auto Mode
+aws eks update-cluster-config \
+  --name $CLUSTER_NAME \
+  --region $AWS_REGION \
+  --compute-config enabled=true,nodePools=system,general-purpose \
+  --kubernetes-network-config '{"elasticLoadBalancing":{"enabled":true}}' \
+  --storage-config '{"blockStorage":{"enabled":true}}'
 ```
 
-This takes 15-20 minutes. The `--with-oidc` flag is critical — it enables IRSA which the operator stack requires.
+This takes 15-20 minutes. The `--with-oidc` flag is critical — it enables IRSA which the operator stack requires. Auto Mode manages compute automatically.
 
 ### A3. Verify the cluster
 
@@ -214,7 +213,7 @@ This takes 15-20 minutes. The `--with-oidc` flag is critical — it enables IRSA
 kubectl get nodes
 ```
 
-You should see 2 nodes in `Ready` state.
+You should see nodes provisioned by EKS Auto Mode once workloads are scheduled.
 
 ### A4. Collect the cluster outputs
 

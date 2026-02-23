@@ -18,10 +18,14 @@ RUN npx turbo build --filter=@plattr/operator
 FROM node:20-slim AS production
 WORKDIR /app
 
-# Copy built output and production node_modules
-COPY --from=builder /build/packages/operator/dist ./dist
+# Copy node_modules from both root (hoisted) and operator (non-hoisted)
+COPY --from=builder /build/node_modules ./node_modules
 COPY --from=builder /build/packages/operator/node_modules ./node_modules
-COPY --from=builder /build/packages/shared/dist ../shared/dist
+
+# Copy built output
+COPY --from=builder /build/packages/operator/dist ./dist
+COPY --from=builder /build/packages/shared/dist ./node_modules/@plattr/shared/dist
+COPY --from=builder /build/packages/shared/package.json ./node_modules/@plattr/shared/
 
 # Non-root user
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser

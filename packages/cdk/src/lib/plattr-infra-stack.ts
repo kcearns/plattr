@@ -1,9 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as eks from 'aws-cdk-lib/aws-eks';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as eks from '@aws-cdk/aws-eks-v2-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as rds from 'aws-cdk-lib/aws-rds';
-import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
 import { Construct } from 'constructs';
 
 export interface PlattrInfraStackProps extends cdk.StackProps {
@@ -11,14 +11,6 @@ export interface PlattrInfraStackProps extends cdk.StackProps {
   availabilityZones?: string[];
   /** EKS cluster name (default: 'plattr-nonprod') */
   clusterName?: string;
-  /** EC2 instance type for worker nodes (default: 't3.large') */
-  nodeInstanceType?: string;
-  /** Minimum number of worker nodes (default: 2) */
-  nodeMinSize?: number;
-  /** Maximum number of worker nodes (default: 4) */
-  nodeMaxSize?: number;
-  /** Desired number of worker nodes (default: 2) */
-  nodeDesiredSize?: number;
   /** Aurora Serverless v2 minimum ACU (default: 0.5) */
   auroraMinCapacity?: number;
   /** Aurora Serverless v2 maximum ACU (default: 4) */
@@ -28,10 +20,16 @@ export interface PlattrInfraStackProps extends cdk.StackProps {
 export class PlattrInfraStack extends cdk.Stack {
   /** The EKS cluster */
   public readonly cluster: eks.Cluster;
+  /** The IAM role with kubectl/masters access to the cluster */
+  public readonly kubectlRole: iam.Role;
   /** The Aurora Serverless v2 database cluster */
   public readonly auroraCluster: rds.DatabaseCluster;
   /** The Aurora security group */
   public readonly auroraSecurityGroup: ec2.SecurityGroup;
+  /** The native OIDC provider ARN for IRSA */
+  public readonly oidcProviderArn: string;
+  /** The ECR repository for the operator image */
+  public readonly operatorEcrRepo: ecr.Repository;
 
   private readonly _availabilityZones?: string[];
 
@@ -45,10 +43,6 @@ export class PlattrInfraStack extends cdk.Stack {
     this._availabilityZones = props.availabilityZones;
 
     const clusterName = props.clusterName ?? 'plattr-nonprod';
-    const nodeInstanceType = props.nodeInstanceType ?? 't3.large';
-    const nodeMinSize = props.nodeMinSize ?? 2;
-    const nodeMaxSize = props.nodeMaxSize ?? 4;
-    const nodeDesiredSize = props.nodeDesiredSize ?? 2;
     const auroraMinCapacity = props.auroraMinCapacity ?? 0.5;
     const auroraMaxCapacity = props.auroraMaxCapacity ?? 4;
 
@@ -73,30 +67,31 @@ export class PlattrInfraStack extends cdk.Stack {
     });
 
     // -------------------------------------------------------
-    // 2. EKS Cluster — K8s 1.31, managed node group, OIDC
+    // 2. EKS Cluster — K8s 1.33, Auto Mode, OIDC
     // -------------------------------------------------------
-    const kubectlRole = new iam.Role(this, 'KubectlRole', {
-      assumedBy: new iam.AccountRootPrincipal(),
+    this.kubectlRole = new iam.Role(this, 'KubectlRole', {
+      assumedBy: new iam.CompositePrincipal(
+        new iam.AccountRootPrincipal(),
+        new iam.ServicePrincipal('lambda.amazonaws.com'),
+      ),
       description: 'Role for CDK kubectl operations on the Plattr EKS cluster',
     });
 
     this.cluster = new eks.Cluster(this, 'EksCluster', {
       clusterName,
-      version: eks.KubernetesVersion.V1_31,
-      kubectlLayer: new KubectlV31Layer(this, 'KubectlLayer'),
+      version: eks.KubernetesVersion.V1_33,
       vpc,
       vpcSubnets: [{ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS }],
-      defaultCapacity: 0,
-      mastersRole: kubectlRole,
+      defaultCapacityType: eks.DefaultCapacityType.AUTOMODE,
+      compute: {
+        nodePools: ['system', 'general-purpose'],
+      },
+      mastersRole: this.kubectlRole,
     });
 
-    this.cluster.addNodegroupCapacity('PlattrWorkers', {
-      instanceTypes: [new ec2.InstanceType(nodeInstanceType)],
-      minSize: nodeMinSize,
-      maxSize: nodeMaxSize,
-      desiredSize: nodeDesiredSize,
-      capacityType: eks.CapacityType.ON_DEMAND,
-      subnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+    new eks.Addon(this, 'MetricsServerAddon', {
+      addonName: 'metrics-server',
+      cluster: this.cluster,
     });
 
     // -------------------------------------------------------
@@ -134,6 +129,28 @@ export class PlattrInfraStack extends cdk.Stack {
     });
 
     // -------------------------------------------------------
+    // 4. OIDC Provider (native) for IRSA
+    // -------------------------------------------------------
+    const oidcProvider = new eks.OidcProviderNative(this, 'OidcProvider', {
+      url: this.cluster.clusterOpenIdConnectIssuerUrl,
+    });
+    this.oidcProviderArn = oidcProvider.openIdConnectProviderArn;
+
+    // -------------------------------------------------------
+    // 5. ECR repository for operator image
+    // -------------------------------------------------------
+    this.operatorEcrRepo = new ecr.Repository(this, 'OperatorEcrRepo', {
+      repositoryName: 'plattr-operator',
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      lifecycleRules: [
+        {
+          maxImageCount: 25,
+          description: 'Keep last 25 images',
+        },
+      ],
+    });
+
+    // -------------------------------------------------------
     // Outputs
     // -------------------------------------------------------
     new cdk.CfnOutput(this, 'ClusterName', {
@@ -142,12 +159,12 @@ export class PlattrInfraStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'KubectlRoleArn', {
-      value: kubectlRole.roleArn,
+      value: this.kubectlRole.roleArn,
       description: 'IAM role ARN for kubectl access',
     });
 
     new cdk.CfnOutput(this, 'OidcProviderArn', {
-      value: this.cluster.openIdConnectProvider.openIdConnectProviderArn,
+      value: oidcProvider.openIdConnectProviderArn,
       description: 'OIDC provider ARN for IRSA',
     });
 
@@ -159,6 +176,11 @@ export class PlattrInfraStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'AuroraSecurityGroupId', {
       value: this.auroraSecurityGroup.securityGroupId,
       description: 'Aurora security group ID',
+    });
+
+    new cdk.CfnOutput(this, 'EcrRepoUri', {
+      value: this.operatorEcrRepo.repositoryUri,
+      description: 'ECR repository URI for the Plattr operator image',
     });
   }
 }

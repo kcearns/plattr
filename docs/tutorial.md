@@ -116,15 +116,11 @@ Choose `CDK-managed` to have CDK create the VPC, EKS cluster, and Aurora databas
 ```
 ? EKS cluster name?         plattr-nonprod
 ? Availability zones?       (press Enter for auto)
-? Node instance type?       t3.large
-? Node min count?           2
-? Node max count?           4
-? Node desired count?       2
 ? Aurora min ACU?           0.5
 ? Aurora max ACU?           4
 ```
 
-For a tutorial or dev/test environment, `t3.large` with 2 nodes and Aurora Serverless at 0.5–4 ACUs keeps costs low.
+EKS Auto Mode handles compute automatically — no instance types or node counts to configure. For a tutorial or dev/test environment, Aurora Serverless at 0.5–4 ACUs keeps costs low.
 
 The wizard writes `packages/cdk/cdk.json` and prints next steps:
 
@@ -163,7 +159,7 @@ CDK will show you the resources it plans to create and ask for confirmation. Typ
 
 | Stack | What it creates |
 |---|---|
-| `PlattrInfraStack` | VPC (public/private subnets, NAT gateway), EKS cluster (Kubernetes 1.31), managed node group (`t3.large` × 2), Aurora Serverless v2 (PostgreSQL 16.4) |
+| `PlattrInfraStack` | VPC (public/private subnets, NAT gateway), EKS cluster (Kubernetes 1.33, Auto Mode), Aurora Serverless v2 (PostgreSQL 16.4) |
 | `PlattrOperatorStack` | `plattr-system` namespace, CRDs (`Application`, `PreviewEnvironment`), operator Helm release, ECR repo (`plattr-operator`), IRSA role, environment namespaces (`staging`, `uat`, `production`), cert-manager + Let's Encrypt, external-dns, ingress-nginx (AWS NLB), Keycloak |
 | `PlattrCicdStack` | GitHub OIDC provider, ECR repo (`plattr-apps`), CI/CD deploy IAM roles |
 
@@ -180,8 +176,8 @@ Check that nodes are ready:
 ```bash
 kubectl get nodes
 # NAME                          STATUS   ROLES    AGE   VERSION
-# ip-10-0-1-xx.ec2.internal    Ready    <none>   10m   v1.31.x
-# ip-10-0-2-xx.ec2.internal    Ready    <none>   10m   v1.31.x
+# ip-10-0-1-xx.ec2.internal    Ready    <none>   10m   v1.33.x
+# ip-10-0-2-xx.ec2.internal    Ready    <none>   10m   v1.33.x
 ```
 
 Check the operator is running:

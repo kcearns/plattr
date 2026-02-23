@@ -1,8 +1,9 @@
 import * as cdk from 'aws-cdk-lib';
-import * as eks from 'aws-cdk-lib/aws-eks';
+import * as eks from '@aws-cdk/aws-eks-v2-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as s3assets from 'aws-cdk-lib/aws-s3-assets';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { KubectlV33Layer } from '@aws-cdk/lambda-layer-kubectl-v33';
 import { Construct } from 'constructs';
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
@@ -19,6 +20,8 @@ export interface PlattrOperatorStackProps extends cdk.StackProps {
   auroraClusterEndpoint: string;
   /** Security group ID of the Aurora cluster (for network access) */
   auroraSecurityGroupId: string;
+  /** ECR repository URI for the operator image */
+  operatorEcrRepoUri: string;
   /** Base domain for app ingresses (e.g. platform.company.dev) */
   baseDomain: string;
   /** Route 53 hosted zone ID for the base domain */
@@ -27,8 +30,8 @@ export interface PlattrOperatorStackProps extends cdk.StackProps {
   installCertManager?: boolean;
   /** Install external-dns Helm chart (default: true) */
   installExternalDns?: boolean;
-  /** Install ingress-nginx Helm chart (default: true) */
-  installIngressNginx?: boolean;
+  /** Install Traefik ingress controller Helm chart (default: true) */
+  installTraefik?: boolean;
   /** Install Keycloak Helm chart for managed auth (default: true) */
   installKeycloak?: boolean;
   /** ElastiCache Redis endpoint (empty = container mode) */
@@ -48,16 +51,24 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     // Import existing EKS cluster
     // -------------------------------------------------------
-    const oidcProvider = eks.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+    const oidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
       this,
       'ImportedOidc',
       props.oidcProviderArn,
     );
 
+    const kubectlRole = iam.Role.fromRoleArn(this, 'ImportedKubectlRole', props.kubectlRoleArn);
+
     const cluster = eks.Cluster.fromClusterAttributes(this, 'ImportedCluster', {
       clusterName: props.eksClusterName,
-      kubectlRoleArn: props.kubectlRoleArn,
       openIdConnectProvider: oidcProvider,
+      kubectlProvider: new eks.KubectlProvider(this, 'KubectlProvider', {
+        cluster: eks.Cluster.fromClusterAttributes(this, 'ClusterForKubectl', {
+          clusterName: props.eksClusterName,
+        }),
+        kubectlLayer: new KubectlV33Layer(this, 'KubectlLayer'),
+        role: kubectlRole,
+      }),
     });
 
     // -------------------------------------------------------
@@ -109,21 +120,7 @@ export class PlattrOperatorStack extends cdk.Stack {
     });
 
     // -------------------------------------------------------
-    // 4. ECR repository for operator image
-    // -------------------------------------------------------
-    const ecrRepo = new ecr.Repository(this, 'OperatorEcrRepo', {
-      repositoryName: 'plattr-operator',
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-      lifecycleRules: [
-        {
-          maxImageCount: 25,
-          description: 'Keep last 25 images',
-        },
-      ],
-    });
-
-    // -------------------------------------------------------
-    // 5. IRSA — IAM role for the operator ServiceAccount
+    // 4. IRSA — IAM role for the operator ServiceAccount
     // -------------------------------------------------------
     // Extract the OIDC issuer URL from the provider ARN.
     // Use CfnJson so the condition keys resolve at deploy time —
@@ -193,16 +190,17 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     // 6. Deploy operator via Helm chart
     // -------------------------------------------------------
+    const operatorChartAsset = new s3assets.Asset(this, 'OperatorChartAsset', {
+      path: path.resolve(__dirname, '../../../../manifests/helm/plattr-operator'),
+    });
+
     cluster.addHelmChart('PlattrOperator', {
-      chart: path.resolve(
-        __dirname,
-        '../../../../manifests/helm/plattr-operator',
-      ),
+      chartAsset: operatorChartAsset,
       namespace: operatorNamespace,
       release: 'plattr-operator',
       values: {
         image: {
-          repository: ecrRepo.repositoryUri,
+          repository: props.operatorEcrRepoUri,
           tag: 'latest',
           pullPolicy: 'Always',
         },
@@ -233,7 +231,7 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     const namespaces = props.prodMode ? ['production'] : ['staging', 'uat', 'production'];
     for (const env of namespaces) {
-      cluster.addManifest(`Namespace-${env}`, {
+      const ns = cluster.addManifest(`Namespace-${env}`, {
         apiVersion: 'v1',
         kind: 'Namespace',
         metadata: {
@@ -246,7 +244,7 @@ export class PlattrOperatorStack extends cdk.Stack {
       });
 
       // Resource quotas per environment
-      cluster.addManifest(`ResourceQuota-${env}`, {
+      const quota = cluster.addManifest(`ResourceQuota-${env}`, {
         apiVersion: 'v1',
         kind: 'ResourceQuota',
         metadata: {
@@ -263,25 +261,31 @@ export class PlattrOperatorStack extends cdk.Stack {
           },
         },
       });
+      quota.node.addDependency(ns);
     }
 
     // -------------------------------------------------------
     // 8. Supporting add-ons (conditional)
     // -------------------------------------------------------
     if (props.installCertManager !== false) {
-      cluster.addHelmChart('CertManager', {
+      const certManager = cluster.addHelmChart('CertManager', {
         chart: 'cert-manager',
+        version: 'v1.17.2',
         repository: 'https://charts.jetstack.io',
         namespace: 'cert-manager',
         release: 'cert-manager',
         createNamespace: true,
+        timeout: cdk.Duration.minutes(10),
         values: {
           installCRDs: true,
+          startupapicheck: {
+            timeout: '5m',
+          },
         },
       });
 
-      // ClusterIssuer for Let's Encrypt
-      cluster.addManifest('ClusterIssuer-LetsEncrypt', {
+      // ClusterIssuer for Let's Encrypt (must wait for cert-manager CRDs)
+      const clusterIssuer = cluster.addManifest('ClusterIssuer-LetsEncrypt', {
         apiVersion: 'cert-manager.io/v1',
         kind: 'ClusterIssuer',
         metadata: {
@@ -298,7 +302,7 @@ export class PlattrOperatorStack extends cdk.Stack {
               {
                 http01: {
                   ingress: {
-                    class: 'nginx',
+                    class: 'traefik',
                   },
                 },
               },
@@ -306,6 +310,7 @@ export class PlattrOperatorStack extends cdk.Stack {
           },
         },
       });
+      clusterIssuer.node.addDependency(certManager);
     }
 
     if (props.installExternalDns !== false) {
@@ -315,6 +320,7 @@ export class PlattrOperatorStack extends cdk.Stack {
         namespace: 'external-dns',
         release: 'external-dns',
         createNamespace: true,
+        timeout: cdk.Duration.minutes(10),
         values: {
           provider: 'aws',
           domainFilters: [props.baseDomain],
@@ -327,22 +333,21 @@ export class PlattrOperatorStack extends cdk.Stack {
       });
     }
 
-    if (props.installIngressNginx !== false) {
-      cluster.addHelmChart('IngressNginx', {
-        chart: 'ingress-nginx',
-        repository: 'https://kubernetes.github.io/ingress-nginx',
-        namespace: 'ingress-nginx',
-        release: 'ingress-nginx',
+    if (props.installTraefik !== false) {
+      cluster.addHelmChart('Traefik', {
+        chart: 'traefik',
+        repository: 'https://traefik.github.io/charts',
+        namespace: 'traefik',
+        release: 'traefik',
         createNamespace: true,
+        timeout: cdk.Duration.minutes(10),
         values: {
-          controller: {
-            service: {
-              type: 'LoadBalancer',
-              annotations: {
-                'service.beta.kubernetes.io/aws-load-balancer-type': 'nlb',
-                'service.beta.kubernetes.io/aws-load-balancer-scheme':
-                  'internet-facing',
-              },
+          service: {
+            type: 'LoadBalancer',
+            annotations: {
+              'service.beta.kubernetes.io/aws-load-balancer-type': 'nlb',
+              'service.beta.kubernetes.io/aws-load-balancer-scheme':
+                'internet-facing',
             },
           },
         },
@@ -382,7 +387,7 @@ export class PlattrOperatorStack extends cdk.Stack {
           ],
           ingress: {
             enabled: true,
-            ingressClassName: 'nginx',
+            ingressClassName: 'traefik',
             hostname: `auth.${props.baseDomain}`,
             annotations: {
               'cert-manager.io/cluster-issuer': 'letsencrypt-prod',
@@ -400,11 +405,6 @@ export class PlattrOperatorStack extends cdk.Stack {
     // -------------------------------------------------------
     // Outputs
     // -------------------------------------------------------
-    new cdk.CfnOutput(this, 'EcrRepoUri', {
-      value: ecrRepo.repositoryUri,
-      description: 'ECR repository URI for the Plattr operator image',
-    });
-
     new cdk.CfnOutput(this, 'OperatorRoleArn', {
       value: operatorRole.roleArn,
       description: 'IRSA role ARN for the Plattr operator',

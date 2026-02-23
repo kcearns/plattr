@@ -1,11 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import * as eks from 'aws-cdk-lib/aws-eks';
+import * as ecr from 'aws-cdk-lib/aws-ecr';
+import * as eks from '@aws-cdk/aws-eks-v2-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as opensearch from 'aws-cdk-lib/aws-opensearchservice';
 import * as elasticache from 'aws-cdk-lib/aws-elasticache';
-import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
 import { Construct } from 'constructs';
 
 export interface PlattrProdInfraStackProps extends cdk.StackProps {
@@ -13,14 +13,6 @@ export interface PlattrProdInfraStackProps extends cdk.StackProps {
   availabilityZones?: string[];
   /** EKS cluster name (default: 'plattr-prod') */
   clusterName?: string;
-  /** EC2 instance type for worker nodes (default: 't3.xlarge') */
-  nodeInstanceType?: string;
-  /** Minimum number of worker nodes (default: 2) */
-  nodeMinSize?: number;
-  /** Maximum number of worker nodes (default: 6) */
-  nodeMaxSize?: number;
-  /** Desired number of worker nodes (default: 3) */
-  nodeDesiredSize?: number;
   /** Aurora Serverless v2 minimum ACU (default: 1) */
   auroraMinCapacity?: number;
   /** Aurora Serverless v2 maximum ACU (default: 8) */
@@ -35,12 +27,15 @@ export interface PlattrProdInfraStackProps extends cdk.StackProps {
 
 export class PlattrProdInfraStack extends cdk.Stack {
   public readonly cluster: eks.Cluster;
+  public readonly kubectlRole: iam.Role;
   public readonly auroraCluster: rds.DatabaseCluster;
   public readonly auroraSecurityGroup: ec2.SecurityGroup;
   public readonly elasticacheSecurityGroup: ec2.SecurityGroup;
   public readonly opensearchSecurityGroup: ec2.SecurityGroup;
   public readonly redisEndpoint: string;
   public readonly opensearchEndpoint: string;
+  public readonly oidcProviderArn: string;
+  public readonly operatorEcrRepo: ecr.Repository;
 
   private readonly _availabilityZones?: string[];
 
@@ -54,10 +49,6 @@ export class PlattrProdInfraStack extends cdk.Stack {
     this._availabilityZones = props.availabilityZones;
 
     const clusterName = props.clusterName ?? 'plattr-prod';
-    const nodeInstanceType = props.nodeInstanceType ?? 't3.xlarge';
-    const nodeMinSize = props.nodeMinSize ?? 2;
-    const nodeMaxSize = props.nodeMaxSize ?? 6;
-    const nodeDesiredSize = props.nodeDesiredSize ?? 3;
     const auroraMinCapacity = props.auroraMinCapacity ?? 1;
     const auroraMaxCapacity = props.auroraMaxCapacity ?? 8;
     const opensearchInstanceType = props.opensearchInstanceType ?? 't3.medium.search';
@@ -84,30 +75,31 @@ export class PlattrProdInfraStack extends cdk.Stack {
     });
 
     // -------------------------------------------------------
-    // 2. EKS Cluster — K8s 1.31, managed node group, OIDC
+    // 2. EKS Cluster — K8s 1.33, Auto Mode, OIDC
     // -------------------------------------------------------
-    const kubectlRole = new iam.Role(this, 'KubectlRole', {
-      assumedBy: new iam.AccountRootPrincipal(),
+    this.kubectlRole = new iam.Role(this, 'KubectlRole', {
+      assumedBy: new iam.CompositePrincipal(
+        new iam.AccountRootPrincipal(),
+        new iam.ServicePrincipal('lambda.amazonaws.com'),
+      ),
       description: 'Role for CDK kubectl operations on the Plattr prod EKS cluster',
     });
 
     this.cluster = new eks.Cluster(this, 'EksCluster', {
       clusterName,
-      version: eks.KubernetesVersion.V1_31,
-      kubectlLayer: new KubectlV31Layer(this, 'KubectlLayer'),
+      version: eks.KubernetesVersion.V1_33,
       vpc,
       vpcSubnets: [{ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS }],
-      defaultCapacity: 0,
-      mastersRole: kubectlRole,
+      defaultCapacityType: eks.DefaultCapacityType.AUTOMODE,
+      compute: {
+        nodePools: ['system', 'general-purpose'],
+      },
+      mastersRole: this.kubectlRole,
     });
 
-    this.cluster.addNodegroupCapacity('PlattrWorkers', {
-      instanceTypes: [new ec2.InstanceType(nodeInstanceType)],
-      minSize: nodeMinSize,
-      maxSize: nodeMaxSize,
-      desiredSize: nodeDesiredSize,
-      capacityType: eks.CapacityType.ON_DEMAND,
-      subnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+    new eks.Addon(this, 'MetricsServerAddon', {
+      addonName: 'metrics-server',
+      cluster: this.cluster,
     });
 
     // -------------------------------------------------------
@@ -248,6 +240,28 @@ export class PlattrProdInfraStack extends cdk.Stack {
     }
 
     // -------------------------------------------------------
+    // OIDC Provider (native) for IRSA
+    // -------------------------------------------------------
+    const oidcProvider = new eks.OidcProviderNative(this, 'OidcProvider', {
+      url: this.cluster.clusterOpenIdConnectIssuerUrl,
+    });
+    this.oidcProviderArn = oidcProvider.openIdConnectProviderArn;
+
+    // -------------------------------------------------------
+    // ECR repository for operator image
+    // -------------------------------------------------------
+    this.operatorEcrRepo = new ecr.Repository(this, 'OperatorEcrRepo', {
+      repositoryName: 'plattr-operator-prod',
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      lifecycleRules: [
+        {
+          maxImageCount: 25,
+          description: 'Keep last 25 images',
+        },
+      ],
+    });
+
+    // -------------------------------------------------------
     // Outputs
     // -------------------------------------------------------
     new cdk.CfnOutput(this, 'ClusterName', {
@@ -256,12 +270,12 @@ export class PlattrProdInfraStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'KubectlRoleArn', {
-      value: kubectlRole.roleArn,
+      value: this.kubectlRole.roleArn,
       description: 'IAM role ARN for kubectl access',
     });
 
     new cdk.CfnOutput(this, 'OidcProviderArn', {
-      value: this.cluster.openIdConnectProvider.openIdConnectProviderArn,
+      value: oidcProvider.openIdConnectProviderArn,
       description: 'OIDC provider ARN for IRSA',
     });
 

@@ -52,7 +52,7 @@ npx cdk deploy PlattrProdInfraStack PlattrProdOperatorStack \
 
 This creates:
 - **VPC** with public/private subnets (2 AZs, 1 NAT)
-- **EKS cluster** `plattr-prod` (t3.xlarge nodes, 2-6 scaling)
+- **EKS cluster** `plattr-prod` (Auto Mode, compute fully managed by EKS)
 - **Aurora Serverless v2** (PostgreSQL 16.4, 1-8 ACU)
 - **ElastiCache Serverless** (Redis 7, `plattr-prod-redis`)
 - **OpenSearch Service** domain (`plattr-prod-search`, 2x t3.medium.search)
@@ -66,10 +66,6 @@ This creates:
 | Context key | Default | Description |
 |---|---|---|
 | `eksClusterName` | `plattr-prod` | EKS cluster name |
-| `nodeInstanceType` | `t3.xlarge` | EC2 instance type |
-| `nodeMinSize` | `2` | Min worker nodes |
-| `nodeMaxSize` | `6` | Max worker nodes |
-| `nodeDesiredSize` | `3` | Desired worker nodes |
 | `auroraMinCapacity` | `1` | Aurora min ACU |
 | `auroraMaxCapacity` | `8` | Aurora max ACU |
 | `opensearchInstanceType` | `t3.medium.search` | OpenSearch instance type |
