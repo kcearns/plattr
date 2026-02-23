@@ -1,0 +1,2984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="An internal developer platform — Vercel-like experience on Kubernetes">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../plattr-team-guide/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Developer Guide - Plattr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#developer-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Plattr" class="md-header__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plattr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Developer Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Plattr" class="md-nav__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Plattr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-new-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a New App
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a New App">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-plattryaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example plattr.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-port" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Port
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#database-when-databaseenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database (when database.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-when-storageenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage (when storage.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-when-authenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth (when auth.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-when-redisenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis (when redis.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opensearch-when-searchenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch (when search.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-equivalents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Equivalents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ephemeral-ci-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ephemeral CI Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seeding-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seeding Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactive-shell-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Shell (Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-to-remote-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect to Remote Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-local-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset Local Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-and-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema and Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrations-in-staging-and-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations in Staging and Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#postgrest-auto-generated-rest-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgREST (Auto-Generated REST API)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PostgREST (Auto-Generated REST API)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-reload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Reload
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Storage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-s3-compatible-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using S3-Compatible Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-minio-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local MinIO Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#public-vs-private-buckets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public vs Private Buckets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Redis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-redis-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset Redis Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opensearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenSearch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opensearch-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch Dashboards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-opensearch-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset OpenSearch Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oidc-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OIDC Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-deploy-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Deploy Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploying-to-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploying to Production
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deploying to Production">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cicd-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI/CD Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-build-and-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Build and Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preview-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Environments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preview Environments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Preview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Preview
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-nextjs-app-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Next.js App from Scratch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-rails-app-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Rails App from Scratch
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plattr-team-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plattr Team Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CRDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plattr-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plattr.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-new-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a New App
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a New App">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-plattryaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example plattr.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Local Development">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-port" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Port
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#database-when-databaseenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database (when database.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-when-storageenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage (when storage.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-when-authenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth (when auth.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-when-redisenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis (when redis.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opensearch-when-searchenabled-true" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch (when search.enabled: true)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-equivalents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Equivalents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ephemeral-ci-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ephemeral CI Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Workflows
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Workflows">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seeding-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seeding Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactive-shell-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Shell (Local)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connect-to-remote-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connect to Remote Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-local-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset Local Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-and-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema and Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migrations-in-staging-and-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migrations in Staging and Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#postgrest-auto-generated-rest-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgREST (Auto-Generated REST API)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PostgREST (Auto-Generated REST API)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Usage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controlling-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schema-reload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Reload
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object Storage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Object Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-s3-compatible-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using S3-Compatible Storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-minio-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local MinIO Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#public-vs-private-buckets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Public vs Private Buckets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Redis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-redis-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset Redis Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opensearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenSearch">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#opensearch-dashboards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenSearch Dashboards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reset-opensearch-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reset OpenSearch Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-development_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oidc-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OIDC Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-deploy-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Deploy Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploying-to-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deploying to Production
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deploying to Production">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cicd-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CI/CD Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-build-and-deploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Build and Deploy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preview-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Environments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preview Environments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Preview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remote-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remote Preview
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#managing-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#set-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        List Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remove-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remove Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-nextjs-app-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Next.js App from Scratch
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-rails-app-from-scratch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Rails App from Scratch
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="developer-guide">Developer Guide<a class="headerlink" href="#developer-guide" title="Permanent link">&para;</a></h1>
+<p>This guide walks you through building, running, and deploying apps on Plattr. By the end, you'll have a full-stack app with a database, object storage, authentication, and an auto-generated REST API — all from a single <code>plattr.yaml</code> file.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Node.js</strong> 18+ and npm</li>
+<li><strong>Docker</strong> (Docker Desktop or colima)</li>
+<li><strong>Kind</strong> — <code>go install sigs.k8s.io/kind@latest</code> or <code>brew install kind</code></li>
+<li><strong>kubectl</strong> — <code>brew install kubectl</code> or <a href="https://kubernetes.io/docs/tasks/tools/">install guide</a></li>
+<li><strong>Dagger CLI</strong> — <code>curl -fsSL https://dl.dagger.io/dagger/install.sh | sh</code></li>
+<li><strong>Plattr CLI</strong> — <code>npm install -g @plattr/cli</code></li>
+</ul>
+<h2 id="creating-a-new-app">Creating a New App<a class="headerlink" href="#creating-a-new-app" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mkdir<span class="w"> </span>my-app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>my-app
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>plattr<span class="w"> </span>init
+</code></pre></div>
+<p>The interactive wizard asks:
+1. <strong>App name</strong> — lowercase, alphanumeric, hyphens allowed (e.g., <code>my-app</code>)
+2. <strong>Framework</strong> — auto-detected, or choose: <code>nextjs</code>, <code>rails</code>, <code>static</code>, <code>docker</code>
+3. <strong>Database</strong> — enable PostgreSQL?
+4. <strong>Storage</strong> — enable S3-compatible object storage?
+5. <strong>Auth</strong> — enable Keycloak authentication?
+6. <strong>Redis</strong> — enable Redis cache?
+7. <strong>OpenSearch</strong> — enable OpenSearch?</p>
+<p>This creates two files:
+- <code>plattr.yaml</code> — your app configuration
+- <code>.github/workflows/plattr-deploy.yml</code> — CI/CD pipeline</p>
+<h3 id="example-plattryaml">Example <code>plattr.yaml</code><a class="headerlink" href="#example-plattryaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-app</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nextjs</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">database</span><span class="p">:</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="nt">storage</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">buckets</span><span class="p">:</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uploads</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">assets</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="nt">auth</span><span class="p">:</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="nt">providers</span><span class="p">:</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="nt">redis</span><span class="p">:</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="nt">search</span><span class="p">:</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="nt">local</span><span class="p">:</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</code></pre></div>
+<p>See the full <a href="../reference/plattr-yaml/">plattr.yaml Reference</a> for all options.</p>
+<h2 id="local-development">Local Development<a class="headerlink" href="#local-development" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>plattr<span class="w"> </span>dev
+</code></pre></div>
+<p>This sets up your entire infrastructure stack locally on a Kind (Kubernetes in Docker) cluster:</p>
+<ol>
+<li>Creates a Kind cluster and local container registry (first run only)</li>
+<li>Deploys infrastructure services as Kubernetes pods</li>
+<li>Starts port-forwards so services are accessible on localhost</li>
+<li>Writes environment variables to <code>.plattr/{appName}.env</code></li>
+</ol>
+<p><strong>After <code>plattr dev</code> completes</strong>, source the env file and start your dev server:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nb">source</span><span class="w"> </span>.plattr/my-app.env
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>npx<span class="w"> </span>next<span class="w"> </span>dev<span class="w">          </span><span class="c1"># Next.js</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>bin/rails<span class="w"> </span>server<span class="w">      </span><span class="c1"># Rails</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>npm<span class="w"> </span>run<span class="w"> </span>dev<span class="w">           </span><span class="c1"># Generic</span>
+</code></pre></div>
+<h3 id="local-services">Local Services<a class="headerlink" href="#local-services" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL</td>
+<td>5432</td>
+<td>Always</td>
+</tr>
+<tr>
+<td>PostgREST</td>
+<td>3001</td>
+<td><code>database.enabled: true</code></td>
+</tr>
+<tr>
+<td>MinIO</td>
+<td>9000, 9001</td>
+<td><code>storage.enabled: true</code></td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>8080</td>
+<td><code>auth.enabled: true</code></td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>6379</td>
+<td><code>redis.enabled: true</code></td>
+</tr>
+<tr>
+<td>OpenSearch</td>
+<td>9200</td>
+<td><code>search.enabled: true</code></td>
+</tr>
+<tr>
+<td>OpenSearch Dashboards</td>
+<td>5601</td>
+<td><code>search.enabled: true</code></td>
+</tr>
+</tbody>
+</table>
+<p>All services start only if enabled in <code>plattr.yaml</code>. A static site with no database won't start PostgreSQL.</p>
+<h3 id="managing-infrastructure">Managing Infrastructure<a class="headerlink" href="#managing-infrastructure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Generate AWS CDK config interactively (for deploying to AWS)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>plattr<span class="w"> </span>infra<span class="w"> </span>init
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Check infrastructure status</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>plattr<span class="w"> </span>infra<span class="w"> </span>status
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Stop infrastructure (data preserved, saves resources)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>plattr<span class="w"> </span>infra<span class="w"> </span>stop
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Restart stopped infrastructure</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>plattr<span class="w"> </span>infra<span class="w"> </span>start
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="c1"># Delete everything (cluster, registry, all data)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>plattr<span class="w"> </span>infra<span class="w"> </span>destroy
+</code></pre></div>
+<h3 id="custom-port">Custom Port<a class="headerlink" href="#custom-port" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>plattr<span class="w"> </span>dev<span class="w"> </span>--port<span class="w"> </span><span class="m">4000</span>
+</code></pre></div>
+<h3 id="state-files">State Files<a class="headerlink" href="#state-files" title="Permanent link">&para;</a></h3>
+<p><code>plattr dev</code> creates a <code>.plattr/</code> directory in your project with:
+- <code>{appName}.env</code> — environment variables you can <code>source</code>
+- <code>{appName}.pids</code> — port-forward process IDs (managed automatically)</p>
+<p>Add <code>.plattr/</code> to your <code>.gitignore</code>.</p>
+<h2 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
+<p>Plattr automatically provides these env vars in <code>.plattr/{appName}.env</code>:</p>
+<h3 id="database-when-databaseenabled-true">Database (when <code>database.enabled: true</code>)<a class="headerlink" href="#database-when-databaseenabled-true" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td><code>postgresql://plattr:localdev@127.0.0.1:5432/plattr?search_path=my_app</code></td>
+<td>Full connection string</td>
+</tr>
+<tr>
+<td><code>POSTGREST_URL</code></td>
+<td><code>http://127.0.0.1:3001</code></td>
+<td>PostgREST endpoint</td>
+</tr>
+</tbody>
+</table>
+<h3 id="storage-when-storageenabled-true">Storage (when <code>storage.enabled: true</code>)<a class="headerlink" href="#storage-when-storageenabled-true" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>S3_ENDPOINT</code></td>
+<td><code>http://127.0.0.1:9000</code></td>
+<td>S3 endpoint</td>
+</tr>
+<tr>
+<td><code>S3_ACCESS_KEY</code></td>
+<td><code>minioadmin</code></td>
+<td>Access key</td>
+</tr>
+<tr>
+<td><code>S3_SECRET_KEY</code></td>
+<td><code>minioadmin</code></td>
+<td>Secret key</td>
+</tr>
+<tr>
+<td><code>S3_REGION</code></td>
+<td><code>us-east-1</code></td>
+<td>Region</td>
+</tr>
+<tr>
+<td><code>S3_BUCKET_UPLOADS</code></td>
+<td><code>my-app-uploads</code></td>
+<td>Bucket name (one per bucket in config)</td>
+</tr>
+</tbody>
+</table>
+<p>Bucket env var names are derived from the bucket name: <code>uploads</code> becomes <code>S3_BUCKET_UPLOADS</code>, <code>user-files</code> becomes <code>S3_BUCKET_USER_FILES</code>.</p>
+<h3 id="auth-when-authenabled-true">Auth (when <code>auth.enabled: true</code>)<a class="headerlink" href="#auth-when-authenabled-true" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AUTH_ISSUER_URL</code></td>
+<td><code>http://127.0.0.1:8080/realms/my-app</code></td>
+<td>OIDC issuer URL</td>
+</tr>
+<tr>
+<td><code>AUTH_CLIENT_ID</code></td>
+<td><code>my-app-app</code></td>
+<td>OIDC client ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="redis-when-redisenabled-true">Redis (when <code>redis.enabled: true</code>)<a class="headerlink" href="#redis-when-redisenabled-true" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td><code>redis://127.0.0.1:6379</code></td>
+<td>Redis connection URL</td>
+</tr>
+</tbody>
+</table>
+<h3 id="opensearch-when-searchenabled-true">OpenSearch (when <code>search.enabled: true</code>)<a class="headerlink" href="#opensearch-when-searchenabled-true" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OPENSEARCH_URL</code></td>
+<td><code>http://127.0.0.1:9200</code></td>
+<td>OpenSearch endpoint</td>
+</tr>
+<tr>
+<td><code>OPENSEARCH_DASHBOARDS_URL</code></td>
+<td><code>http://127.0.0.1:5601</code></td>
+<td>OpenSearch Dashboards UI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="production-equivalents">Production Equivalents<a class="headerlink" href="#production-equivalents" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Local Value</th>
+<th>Production Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td><code>postgresql://plattr:localdev@127.0.0.1:5432/...</code></td>
+<td><code>postgresql://{app}_app:{random}@aurora:5432/...</code></td>
+</tr>
+<tr>
+<td><code>POSTGREST_URL</code></td>
+<td><code>http://127.0.0.1:3001</code></td>
+<td><code>https://{domain}/api/rest</code></td>
+</tr>
+<tr>
+<td><code>POSTGREST_INTERNAL_URL</code></td>
+<td><em>(not set)</em></td>
+<td><code>http://localhost:3001</code></td>
+</tr>
+<tr>
+<td><code>S3_ENDPOINT</code></td>
+<td><code>http://127.0.0.1:9000</code></td>
+<td><em>(AWS S3 default)</em></td>
+</tr>
+<tr>
+<td><code>AUTH_ISSUER_URL</code></td>
+<td><code>http://127.0.0.1:8080/realms/{app}</code></td>
+<td><code>https://auth.{baseDomain}/realms/{app}</code></td>
+</tr>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td><code>redis://127.0.0.1:6379</code></td>
+<td><code>redis://{managed-redis}:6379</code></td>
+</tr>
+<tr>
+<td><code>OPENSEARCH_URL</code></td>
+<td><code>http://127.0.0.1:9200</code></td>
+<td><code>https://{managed-opensearch}:443</code></td>
+</tr>
+</tbody>
+</table>
+<p>In production, <code>POSTGREST_INTERNAL_URL</code> connects directly to the PostgREST sidecar (same pod, no network hop). Use it for server-side calls. Use <code>POSTGREST_URL</code> for client-side/browser calls.</p>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="local-tests">Local Tests<a class="headerlink" href="#local-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>plattr<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>Auto-detects your test runner and runs tests using the environment from <code>.plattr/{appName}.env</code>. Requires infrastructure to be running (<code>plattr dev</code> first).</p>
+<p>Supported test runners (auto-detected):
+- <strong>Vitest</strong> — <code>vitest.config.{ts,js,mts}</code>
+- <strong>Jest</strong> — <code>jest.config.{ts,js,mjs}</code>
+- <strong>npm test</strong> — <code>package.json</code> test script
+- <strong>RSpec</strong> — <code>spec/**/*.rb</code>
+- <strong>Minitest</strong> — <code>test/**/*.rb</code></p>
+<h3 id="ephemeral-ci-tests">Ephemeral CI Tests<a class="headerlink" href="#ephemeral-ci-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>plattr<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--ci
+</code></pre></div>
+<p>Runs Dagger-based tests with clean infrastructure (fresh database, fresh state). Use this in CI pipelines or when you want guaranteed clean state.</p>
+<h2 id="database-workflows">Database Workflows<a class="headerlink" href="#database-workflows" title="Permanent link">&para;</a></h2>
+<h3 id="running-migrations">Running Migrations<a class="headerlink" href="#running-migrations" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Auto-detect migration engine</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Specify engine explicitly</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>prisma
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>knex
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>raw
+</code></pre></div>
+<p>Supported engines:
+- <strong>prisma</strong> — runs <code>npx prisma migrate deploy</code>
+- <strong>knex</strong> — runs <code>npx knex migrate:latest</code>
+- <strong>raw</strong> — executes <code>.sql</code> files from the migrations directory</p>
+<h3 id="seeding-data">Seeding Data<a class="headerlink" href="#seeding-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Default seed file</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>seed
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Custom seed file</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>plattr<span class="w"> </span>db<span class="w"> </span>seed<span class="w"> </span>--file<span class="w"> </span>seeds/test-data.sql
+</code></pre></div>
+<h3 id="interactive-shell-local">Interactive Shell (Local)<a class="headerlink" href="#interactive-shell-local" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>shell
+</code></pre></div>
+<p>Opens a <code>psql</code> session connected to your local database.</p>
+<h3 id="connect-to-remote-database">Connect to Remote Database<a class="headerlink" href="#connect-to-remote-database" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Connect to production</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Connect to staging</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect<span class="w"> </span>--env<span class="w"> </span>staging
+</code></pre></div>
+<p>Retrieves the <code>DATABASE_URL</code> from the Kubernetes Secret and opens a <code>psql</code> session.</p>
+<h3 id="reset-local-database">Reset Local Database<a class="headerlink" href="#reset-local-database" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume and restarts PostgreSQL. Run <code>plattr dev</code> to recreate schemas.</p>
+<h3 id="schema-and-roles">Schema and Roles<a class="headerlink" href="#schema-and-roles" title="Permanent link">&para;</a></h3>
+<p>Plattr creates these PostgreSQL objects for your app:</p>
+<ul>
+<li><strong>Schema</strong>: <code>{env}_{app_name}</code> (e.g., <code>prod_my_app</code>, <code>staging_my_app</code>)</li>
+<li><strong>App role</strong>: <code>{env}_{app_name}_app</code> — full CRUD access, used by your app</li>
+<li><strong>Anon role</strong>: <code>{env}_{app_name}_anon</code> — no permissions by default, used by PostgREST</li>
+</ul>
+<p>To expose a table through PostgREST, grant permissions to the anon role in your migrations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">my_table</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">my_app_anon</span><span class="p">;</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">GRANT</span><span class="w"> </span><span class="k">INSERT</span><span class="p">,</span><span class="w"> </span><span class="k">UPDATE</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">my_table</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">my_app_anon</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="migrations-in-staging-and-production">Migrations in Staging and Production<a class="headerlink" href="#migrations-in-staging-and-production" title="Permanent link">&para;</a></h3>
+<p>When you push code with new migrations, here's what happens — and what doesn't:</p>
+<p><strong>What the operator handles (once, on first provision):</strong>
+- Creates the database schema (<code>staging_my_app</code>, <code>prod_my_app</code>)
+- Creates the app role (<code>staging_my_app_app</code>) and anon role (<code>staging_my_app_anon</code>)
+- Creates the <code>{name}-db</code> Secret containing <code>DATABASE_URL</code></p>
+<p><strong>What the operator does NOT do:</strong>
+- Run your migration files — the operator has no knowledge of your migration tool or schema changes</p>
+<p><strong>How migrations actually run in remote environments:</strong></p>
+<p>The recommended approach is to run migrations on container startup. Your Dockerfile should include the migration step before starting the app:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c"># Example: Prisma</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;sh&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-c&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;npx prisma migrate deploy &amp;&amp; node server.js&quot;</span><span class="p">]</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c"># Example: Knex</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="k">CMD</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;sh&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-c&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;npx knex migrate:latest &amp;&amp; node server.js&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>This way, every time the operator does a rolling update (new <code>imageRef</code> → new Deployment pods), the new pods run migrations before accepting traffic. Since migration tools are idempotent, only new migrations are applied — already-applied migrations are skipped.</p>
+<p><strong>Alternative: run migrations manually via the CLI:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Connect to staging DB and run migrations yourself</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect<span class="w"> </span>--env<span class="w"> </span>staging
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># Then run SQL manually, or:</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># Port-forward and run your migration tool locally against the remote DB</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># (retrieve the DATABASE_URL from the K8s Secret)</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>my-app-db<span class="w"> </span>-n<span class="w"> </span>staging<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.DATABASE_URL}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="nv">DATABASE_URL</span><span class="o">=</span>&lt;that<span class="w"> </span>value&gt;<span class="w"> </span>npx<span class="w"> </span>prisma<span class="w"> </span>migrate<span class="w"> </span>deploy
+</code></pre></div>
+<p><strong>The typical push workflow with a migration:</strong></p>
+<ol>
+<li>Write your migration locally (<code>npx prisma migrate dev</code>, <code>npx knex migrate:make</code>, or raw SQL)</li>
+<li>Run it locally: <code>plattr db migrate</code></li>
+<li>Test locally: <code>plattr test</code></li>
+<li>Push to branch → CI builds image (with migration files baked in)</li>
+<li>Operator updates Deployment → new pods start → migration runs on startup</li>
+<li>Verify: <code>plattr status --env staging</code> and <code>plattr logs --env staging</code></li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> If your app does not run migrations on startup, you must run them manually before or after pushing. There is no built-in CI migration step in the generated workflow.</p>
+</blockquote>
+<h2 id="postgrest-auto-generated-rest-api">PostgREST (Auto-Generated REST API)<a class="headerlink" href="#postgrest-auto-generated-rest-api" title="Permanent link">&para;</a></h2>
+<p>When <code>database.enabled: true</code>, you get an auto-generated REST API from your database schema. PostgREST introspects your tables and exposes them as RESTful endpoints.</p>
+<h3 id="local-usage">Local Usage<a class="headerlink" href="#local-usage" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># List all rows in the &quot;todos&quot; table</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>curl<span class="w"> </span>http://localhost:3001/todos
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Filter</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>curl<span class="w"> </span><span class="s2">&quot;http://localhost:3001/todos?completed=eq.false&quot;</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Insert</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:3001/todos<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;title&quot;: &quot;Buy milk&quot;, &quot;completed&quot;: false}&#39;</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="c1"># Update</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>curl<span class="w"> </span>-X<span class="w"> </span>PATCH<span class="w"> </span><span class="s2">&quot;http://localhost:3001/todos?id=eq.1&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;completed&quot;: true}&#39;</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="c1"># Delete</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>curl<span class="w"> </span>-X<span class="w"> </span>DELETE<span class="w"> </span><span class="s2">&quot;http://localhost:3001/todos?id=eq.1&quot;</span>
+</code></pre></div>
+<h3 id="production-usage">Production Usage<a class="headerlink" href="#production-usage" title="Permanent link">&para;</a></h3>
+<p>In production, PostgREST runs as a sidecar in your app pod. Requests go through the Ingress:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>https://my-app.platform.company.dev/api/rest/todos
+</code></pre></div>
+<p>The <code>/api/rest</code> prefix is stripped by nginx before reaching PostgREST. From your app's server-side code, use the internal URL for faster access:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1">// Server-side (same pod, no network hop)</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">POSTGREST_INTERNAL_URL</span><span class="si">}</span><span class="sb">/todos`</span><span class="p">);</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1">// Client-side (browser, goes through Ingress)</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="kd">const</span><span class="w"> </span><span class="nx">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">POSTGREST_URL</span><span class="si">}</span><span class="sb">/todos`</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="controlling-access">Controlling Access<a class="headerlink" href="#controlling-access" title="Permanent link">&para;</a></h3>
+<p>By default, PostgREST uses the <code>_anon</code> role which has no table permissions. You control what's exposed in your migrations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1">-- Expose read-only access</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="k">GRANT</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">todos</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">my_app_anon</span><span class="p">;</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1">-- Expose full CRUD</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="k">GRANT</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">todos</span><span class="w"> </span><span class="k">TO</span><span class="w"> </span><span class="n">my_app_anon</span><span class="p">;</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1">-- No grant = not accessible through PostgREST</span>
+</code></pre></div>
+<p>Row-level security (RLS) policies are respected automatically.</p>
+<h3 id="schema-reload">Schema Reload<a class="headerlink" href="#schema-reload" title="Permanent link">&para;</a></h3>
+<p>When you run a migration that adds or changes tables, PostgREST automatically detects the change (via PostgreSQL LISTEN/NOTIFY). You can also trigger a manual reload:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">NOTIFY</span><span class="w"> </span><span class="n">pgrst</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;reload schema&#39;</span><span class="p">;</span>
+</code></pre></div>
+<h2 id="object-storage">Object Storage<a class="headerlink" href="#object-storage" title="Permanent link">&para;</a></h2>
+<h3 id="using-s3-compatible-storage">Using S3-Compatible Storage<a class="headerlink" href="#using-s3-compatible-storage" title="Permanent link">&para;</a></h3>
+<p>Buckets defined in <code>plattr.yaml</code> are created automatically. Use any S3 SDK:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">S3Client</span><span class="p">,</span><span class="w"> </span><span class="nx">PutObjectCommand</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@aws-sdk/client-s3&#39;</span><span class="p">;</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">s3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">S3Client</span><span class="p">({</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span><span class="nx">endpoint</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_ENDPOINT</span><span class="p">,</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span><span class="nx">region</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_REGION</span><span class="p">,</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">  </span><span class="nx">credentials</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nx">accessKeyId</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_ACCESS_KEY</span><span class="p">,</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span><span class="nx">secretAccessKey</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_SECRET_KEY</span><span class="p">,</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span><span class="nx">forcePathStyle</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="c1">// Required for MinIO (local)</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="p">});</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="k">await</span><span class="w"> </span><span class="nx">s3</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">PutObjectCommand</span><span class="p">({</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">  </span><span class="nx">Bucket</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">S3_BUCKET_UPLOADS</span><span class="p">,</span>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="w">  </span><span class="nx">Key</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;photo.jpg&#39;</span><span class="p">,</span>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="w">  </span><span class="nx">Body</span><span class="o">:</span><span class="w"> </span><span class="nx">fileBuffer</span><span class="p">,</span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="p">}));</span>
+</code></pre></div>
+<h3 id="local-minio-console">Local MinIO Console<a class="headerlink" href="#local-minio-console" title="Permanent link">&para;</a></h3>
+<p>Open <code>http://localhost:9001</code> in your browser. Login with <code>minioadmin</code> / <code>minioadmin</code>.</p>
+<h3 id="public-vs-private-buckets">Public vs Private Buckets<a class="headerlink" href="#public-vs-private-buckets" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nt">storage</span><span class="p">:</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span><span class="nt">buckets</span><span class="p">:</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uploads</span><span class="w">    </span><span class="c1"># Private — requires signed URLs</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">      </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">assets</span><span class="w">     </span><span class="c1"># Public — accessible via direct URL</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">      </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<h2 id="redis">Redis<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h2>
+<h3 id="local-development_1">Local Development<a class="headerlink" href="#local-development_1" title="Permanent link">&para;</a></h3>
+<p>When <code>redis.enabled: true</code>, a Redis 7 instance runs in the Kind cluster, accessible at <code>redis://127.0.0.1:6379</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClient</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;redis&#39;</span><span class="p">;</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">redis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClient</span><span class="p">({</span><span class="w"> </span><span class="nx">url</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">REDIS_URL</span><span class="w"> </span><span class="p">});</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;value&#39;</span><span class="p">);</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="kd">const</span><span class="w"> </span><span class="nx">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">redis</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;key&#39;</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="reset-redis-data">Reset Redis Data<a class="headerlink" href="#reset-redis-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>plattr<span class="w"> </span>redis<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume and restarts Redis.</p>
+<h2 id="opensearch">OpenSearch<a class="headerlink" href="#opensearch" title="Permanent link">&para;</a></h2>
+<h3 id="local-development_2">Local Development<a class="headerlink" href="#local-development_2" title="Permanent link">&para;</a></h3>
+<p>When <code>search.enabled: true</code>, OpenSearch 2.18 runs in the Kind cluster with security disabled for local convenience. The API is available at <code>http://127.0.0.1:9200</code> and the Dashboards UI at <code>http://127.0.0.1:5601</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Client</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;@opensearch-project/opensearch&#39;</span><span class="p">;</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Client</span><span class="p">({</span><span class="w"> </span><span class="nx">node</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">OPENSEARCH_URL</span><span class="w"> </span><span class="p">});</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="c1">// Create an index</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">indices</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span><span class="w"> </span><span class="nx">index</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;products&#39;</span><span class="w"> </span><span class="p">});</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="c1">// Index a document</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">index</span><span class="p">({</span>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="w">  </span><span class="nx">index</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;products&#39;</span><span class="p">,</span>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="w">  </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;Widget&#39;</span><span class="p">,</span><span class="w"> </span><span class="nx">price</span><span class="o">:</span><span class="w"> </span><span class="mf">9.99</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="p">});</span>
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a><span class="c1">// Search</span>
+<a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">body</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">client</span><span class="p">.</span><span class="nx">search</span><span class="p">({</span>
+<a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a><span class="w">  </span><span class="nx">index</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;products&#39;</span><span class="p">,</span>
+<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a><span class="w">  </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">query</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">match</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;widget&#39;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a><span class="p">});</span>
+</code></pre></div>
+<h3 id="opensearch-dashboards">OpenSearch Dashboards<a class="headerlink" href="#opensearch-dashboards" title="Permanent link">&para;</a></h3>
+<p>Open <code>http://localhost:5601</code> in your browser for the Dashboards UI (no login required locally).</p>
+<h3 id="reset-opensearch-data">Reset OpenSearch Data<a class="headerlink" href="#reset-opensearch-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>plattr<span class="w"> </span>search<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume and restarts OpenSearch.</p>
+<h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
+<h3 id="local-development_3">Local Development<a class="headerlink" href="#local-development_3" title="Permanent link">&para;</a></h3>
+<p>Keycloak runs at <code>http://localhost:8080</code> with a pre-configured realm matching your app name. A test user and OIDC client are provisioned automatically.</p>
+<p>Admin console: <code>http://localhost:8080/admin</code> (credentials: <code>admin</code> / <code>admin</code>)</p>
+<h3 id="oidc-integration">OIDC Integration<a class="headerlink" href="#oidc-integration" title="Permanent link">&para;</a></h3>
+<p>Use the standard OIDC flow with the provided env vars:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1">// Example: NextAuth.js configuration</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="k">import</span><span class="w"> </span><span class="nx">KeycloakProvider</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;next-auth/providers/keycloak&#39;</span><span class="p">;</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="k">export</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">authOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">  </span><span class="nx">providers</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span><span class="nx">KeycloakProvider</span><span class="p">({</span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">      </span><span class="nx">clientId</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AUTH_CLIENT_ID</span><span class="p">,</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">      </span><span class="nx">issuer</span><span class="o">:</span><span class="w"> </span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">AUTH_ISSUER_URL</span><span class="p">,</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="w">    </span><span class="p">}),</span>
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="p">};</span>
+</code></pre></div>
+<h3 id="identity-providers">Identity Providers<a class="headerlink" href="#identity-providers" title="Permanent link">&para;</a></h3>
+<p>Providers listed in <code>plattr.yaml</code> (google, github, saml, oidc) are noted for configuration but require Plattr-level OAuth credentials set up by your platform team.</p>
+<h2 id="local-deploy-pipeline">Local Deploy Pipeline<a class="headerlink" href="#local-deploy-pipeline" title="Permanent link">&para;</a></h2>
+<p>Test your production container locally before pushing to CI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p>This runs a full pipeline:
+1. <strong>Tests</strong> — auto-detected test runner
+2. <strong>Build</strong> — production container image via Dagger
+3. <strong>Push</strong> — to the local registry (<code>localhost:5050</code>)
+4. <strong>Security scan</strong> — Trivy scans for HIGH/CRITICAL vulnerabilities
+5. <strong>Deploy</strong> — to the Kind cluster with port-forwarding</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Skip tests and scan for quick iteration</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--skip-tests<span class="w"> </span>--skip-scan
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Fail on vulnerabilities (CI-style)</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--fail-on-scan
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="c1"># Remove the deployment</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>plattr<span class="w"> </span>undeploy<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<h2 id="deploying-to-production">Deploying to Production<a class="headerlink" href="#deploying-to-production" title="Permanent link">&para;</a></h2>
+<h3 id="cicd-pipeline">CI/CD Pipeline<a class="headerlink" href="#cicd-pipeline" title="Permanent link">&para;</a></h3>
+<p><code>plattr init</code> generates <code>.github/workflows/plattr-deploy.yml</code> which:</p>
+<ol>
+<li>Builds a production container image</li>
+<li>Pushes to ECR</li>
+<li>Updates the <code>Application</code> CRD with the new <code>imageRef</code></li>
+<li>The operator reconciles the change (rolling update)</li>
+</ol>
+<h3 id="manual-build-and-deploy">Manual Build and Deploy<a class="headerlink" href="#manual-build-and-deploy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Build production image</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>plattr<span class="w"> </span>build
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Run tests with full infrastructure</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>plattr<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--ci
+</code></pre></div>
+<h3 id="environments">Environments<a class="headerlink" href="#environments" title="Permanent link">&para;</a></h3>
+<p>Plattr supports four environments:</p>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Namespace</th>
+<th>Domain Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>production</code></td>
+<td><code>production</code></td>
+<td><code>{app}.{baseDomain}</code></td>
+</tr>
+<tr>
+<td><code>staging</code></td>
+<td><code>staging</code></td>
+<td><code>{app}.staging.{baseDomain}</code></td>
+</tr>
+<tr>
+<td><code>uat</code></td>
+<td><code>uat</code></td>
+<td><code>{app}.uat.{baseDomain}</code></td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td><code>preview-{app}-pr-{N}</code></td>
+<td><code>pr-{N}.{app}.preview.{baseDomain}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Each environment gets its own database schema, storage buckets, and Keycloak realm — fully isolated.</p>
+<h2 id="preview-environments">Preview Environments<a class="headerlink" href="#preview-environments" title="Permanent link">&para;</a></h2>
+<p>Every pull request can get an isolated preview environment with its own database, storage, and URL.</p>
+<h3 id="local-preview">Local Preview<a class="headerlink" href="#local-preview" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span><span class="w"> </span>--port<span class="w"> </span><span class="m">3100</span>
+</code></pre></div>
+<h3 id="remote-preview">Remote Preview<a class="headerlink" href="#remote-preview" title="Permanent link">&para;</a></h3>
+<p>Remote previews are created automatically when a <code>PreviewEnvironment</code> CRD is applied (typically from CI). List active previews:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>list
+</code></pre></div>
+<p>Output:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>PR   App          Phase     URL                                          Expires
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>42   my-app       Running   https://pr-42.my-app.preview.company.dev     2024-01-15T12:00:00Z
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>87   my-app       Running   https://pr-87.my-app.preview.company.dev     2024-01-16T08:00:00Z
+</code></pre></div>
+<p>Preview environments have a TTL (default 72 hours) and are automatically cleaned up when they expire.</p>
+<h2 id="managing-environment-variables">Managing Environment Variables<a class="headerlink" href="#managing-environment-variables" title="Permanent link">&para;</a></h2>
+<h3 id="set-variables">Set Variables<a class="headerlink" href="#set-variables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Set one or more variables</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>abc123
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>abc123<span class="w"> </span><span class="nv">FEATURE_FLAG</span><span class="o">=</span><span class="nb">true</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="c1"># Target a specific environment</span>
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span>--env<span class="w"> </span>staging<span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>staging-key
+</code></pre></div>
+<h3 id="list-variables">List Variables<a class="headerlink" href="#list-variables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>plattr<span class="w"> </span>env<span class="w"> </span>list
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>plattr<span class="w"> </span>env<span class="w"> </span>list<span class="w"> </span>--env<span class="w"> </span>staging
+</code></pre></div>
+<p>Output shows both Plattr-managed and user-defined variables:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>Plattr-managed:
+<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>  DATABASE_URL    = postgresql://...
+<a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>  DB_HOST         = aurora-cluster.us-east-1.rds.amazonaws.com
+<a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>  S3_ENDPOINT     = https://s3.us-east-1.amazonaws.com
+<a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>  ...
+<a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>
+<a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a>User-defined:
+<a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>  API_KEY         = abc123
+<a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a>  FEATURE_FLAG    = true
+</code></pre></div>
+<h3 id="remove-variables">Remove Variables<a class="headerlink" href="#remove-variables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>API_KEY
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>--env<span class="w"> </span>staging<span class="w"> </span>API_KEY
+</code></pre></div>
+<p>Setting or unsetting variables triggers a deployment restart to pick up the changes.</p>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="application-status">Application Status<a class="headerlink" href="#application-status" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>plattr<span class="w"> </span>status
+<a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>plattr<span class="w"> </span>status<span class="w"> </span>--env<span class="w"> </span>staging
+<a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>plattr<span class="w"> </span>status<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+</code></pre></div>
+<p>Shows phase (Pending, Provisioning, Running, Failed) and condition status for each subsystem.</p>
+<h3 id="application-logs">Application Logs<a class="headerlink" href="#application-logs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Recent logs</span>
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>plattr<span class="w"> </span>logs
+<a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+<a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="c1"># Stream logs</span>
+<a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a>plattr<span class="w"> </span>logs<span class="w"> </span>-f
+<a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a>
+<a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="c1"># Last 100 lines</span>
+<a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a>plattr<span class="w"> </span>logs<span class="w"> </span>--tail<span class="w"> </span><span class="m">100</span>
+<a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a>
+<a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a><span class="c1"># Staging environment</span>
+<a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a>plattr<span class="w"> </span>logs<span class="w"> </span>--env<span class="w"> </span>staging
+<a id="__codelineno-39-12" name="__codelineno-39-12" href="#__codelineno-39-12"></a>
+<a id="__codelineno-39-13" name="__codelineno-39-13" href="#__codelineno-39-13"></a><span class="c1"># Preview environment</span>
+<a id="__codelineno-39-14" name="__codelineno-39-14" href="#__codelineno-39-14"></a>plattr<span class="w"> </span>logs<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+</code></pre></div>
+<p>Logs include all containers in the pod (app + PostgREST sidecar if enabled).</p>
+<h2 id="example-nextjs-app-from-scratch">Example: Next.js App from Scratch<a class="headerlink" href="#example-nextjs-app-from-scratch" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="c1"># 1. Create Next.js app</span>
+<a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>npx<span class="w"> </span>create-next-app@latest<span class="w"> </span>my-app
+<a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="nb">cd</span><span class="w"> </span>my-app
+<a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a>
+<a id="__codelineno-40-5" name="__codelineno-40-5" href="#__codelineno-40-5"></a><span class="c1"># 2. Initialize plattr config</span>
+<a id="__codelineno-40-6" name="__codelineno-40-6" href="#__codelineno-40-6"></a>plattr<span class="w"> </span>init
+<a id="__codelineno-40-7" name="__codelineno-40-7" href="#__codelineno-40-7"></a><span class="c1"># Choose: nextjs, enable database, enable storage, enable auth</span>
+<a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a>
+<a id="__codelineno-40-9" name="__codelineno-40-9" href="#__codelineno-40-9"></a><span class="c1"># 3. Start local infrastructure</span>
+<a id="__codelineno-40-10" name="__codelineno-40-10" href="#__codelineno-40-10"></a>plattr<span class="w"> </span>dev
+<a id="__codelineno-40-11" name="__codelineno-40-11" href="#__codelineno-40-11"></a>
+<a id="__codelineno-40-12" name="__codelineno-40-12" href="#__codelineno-40-12"></a><span class="c1"># 4. Source env vars and start dev server</span>
+<a id="__codelineno-40-13" name="__codelineno-40-13" href="#__codelineno-40-13"></a><span class="nb">source</span><span class="w"> </span>.plattr/my-app.env
+<a id="__codelineno-40-14" name="__codelineno-40-14" href="#__codelineno-40-14"></a>npx<span class="w"> </span>next<span class="w"> </span>dev
+<a id="__codelineno-40-15" name="__codelineno-40-15" href="#__codelineno-40-15"></a><span class="c1"># App on :3000, DB on :5432, Storage on :9000, Auth on :8080, REST API on :3001</span>
+<a id="__codelineno-40-16" name="__codelineno-40-16" href="#__codelineno-40-16"></a>
+<a id="__codelineno-40-17" name="__codelineno-40-17" href="#__codelineno-40-17"></a><span class="c1"># 5. Create a migration (example with Prisma)</span>
+<a id="__codelineno-40-18" name="__codelineno-40-18" href="#__codelineno-40-18"></a>npx<span class="w"> </span>prisma<span class="w"> </span>init
+<a id="__codelineno-40-19" name="__codelineno-40-19" href="#__codelineno-40-19"></a><span class="c1"># Edit prisma/schema.prisma, then:</span>
+<a id="__codelineno-40-20" name="__codelineno-40-20" href="#__codelineno-40-20"></a>npx<span class="w"> </span>prisma<span class="w"> </span>migrate<span class="w"> </span>dev<span class="w"> </span>--name<span class="w"> </span>init
+<a id="__codelineno-40-21" name="__codelineno-40-21" href="#__codelineno-40-21"></a>
+<a id="__codelineno-40-22" name="__codelineno-40-22" href="#__codelineno-40-22"></a><span class="c1"># 6. Grant PostgREST access to your tables</span>
+<a id="__codelineno-40-23" name="__codelineno-40-23" href="#__codelineno-40-23"></a><span class="c1"># In a migration file:</span>
+<a id="__codelineno-40-24" name="__codelineno-40-24" href="#__codelineno-40-24"></a><span class="c1"># GRANT SELECT, INSERT, UPDATE, DELETE ON todos TO my_app_anon;</span>
+<a id="__codelineno-40-25" name="__codelineno-40-25" href="#__codelineno-40-25"></a>
+<a id="__codelineno-40-26" name="__codelineno-40-26" href="#__codelineno-40-26"></a><span class="c1"># 7. Test the REST API</span>
+<a id="__codelineno-40-27" name="__codelineno-40-27" href="#__codelineno-40-27"></a>curl<span class="w"> </span>http://localhost:3001/todos
+<a id="__codelineno-40-28" name="__codelineno-40-28" href="#__codelineno-40-28"></a>
+<a id="__codelineno-40-29" name="__codelineno-40-29" href="#__codelineno-40-29"></a><span class="c1"># 8. Run tests</span>
+<a id="__codelineno-40-30" name="__codelineno-40-30" href="#__codelineno-40-30"></a>plattr<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-40-31" name="__codelineno-40-31" href="#__codelineno-40-31"></a>
+<a id="__codelineno-40-32" name="__codelineno-40-32" href="#__codelineno-40-32"></a><span class="c1"># 9. Test production container locally</span>
+<a id="__codelineno-40-33" name="__codelineno-40-33" href="#__codelineno-40-33"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span>
+<a id="__codelineno-40-34" name="__codelineno-40-34" href="#__codelineno-40-34"></a>
+<a id="__codelineno-40-35" name="__codelineno-40-35" href="#__codelineno-40-35"></a><span class="c1"># 10. Push to deploy</span>
+<a id="__codelineno-40-36" name="__codelineno-40-36" href="#__codelineno-40-36"></a>git<span class="w"> </span>add<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Initial app&quot;</span>
+<a id="__codelineno-40-37" name="__codelineno-40-37" href="#__codelineno-40-37"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+<a id="__codelineno-40-38" name="__codelineno-40-38" href="#__codelineno-40-38"></a><span class="c1"># CI builds, pushes image, operator deploys</span>
+<a id="__codelineno-40-39" name="__codelineno-40-39" href="#__codelineno-40-39"></a>
+<a id="__codelineno-40-40" name="__codelineno-40-40" href="#__codelineno-40-40"></a><span class="c1"># 11. Check status</span>
+<a id="__codelineno-40-41" name="__codelineno-40-41" href="#__codelineno-40-41"></a>plattr<span class="w"> </span>status
+</code></pre></div>
+<h2 id="example-rails-app-from-scratch">Example: Rails App from Scratch<a class="headerlink" href="#example-rails-app-from-scratch" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="c1"># 1. Create Rails app</span>
+<a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>rails<span class="w"> </span>new<span class="w"> </span>my-rails-app<span class="w"> </span>--database<span class="o">=</span>postgresql
+<a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="nb">cd</span><span class="w"> </span>my-rails-app
+<a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>
+<a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="c1"># 2. Initialize plattr config</span>
+<a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a>plattr<span class="w"> </span>init
+<a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="c1"># Choose: rails, enable database</span>
+<a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a>
+<a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="c1"># 3. Update database.yml to use plattr env vars</span>
+<a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a><span class="c1"># config/database.yml:</span>
+<a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="c1">#   default: &amp;default</span>
+<a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="c1">#     adapter: postgresql</span>
+<a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a><span class="c1">#     url: &lt;%= ENV[&#39;DATABASE_URL&#39;] %&gt;</span>
+<a id="__codelineno-41-14" name="__codelineno-41-14" href="#__codelineno-41-14"></a>
+<a id="__codelineno-41-15" name="__codelineno-41-15" href="#__codelineno-41-15"></a><span class="c1"># 4. Start local infrastructure</span>
+<a id="__codelineno-41-16" name="__codelineno-41-16" href="#__codelineno-41-16"></a>plattr<span class="w"> </span>dev
+<a id="__codelineno-41-17" name="__codelineno-41-17" href="#__codelineno-41-17"></a>
+<a id="__codelineno-41-18" name="__codelineno-41-18" href="#__codelineno-41-18"></a><span class="c1"># 5. Source env vars and start dev server</span>
+<a id="__codelineno-41-19" name="__codelineno-41-19" href="#__codelineno-41-19"></a><span class="nb">source</span><span class="w"> </span>.plattr/my-rails-app.env
+<a id="__codelineno-41-20" name="__codelineno-41-20" href="#__codelineno-41-20"></a>bin/rails<span class="w"> </span>server
+<a id="__codelineno-41-21" name="__codelineno-41-21" href="#__codelineno-41-21"></a>
+<a id="__codelineno-41-22" name="__codelineno-41-22" href="#__codelineno-41-22"></a><span class="c1"># 6. Run migrations</span>
+<a id="__codelineno-41-23" name="__codelineno-41-23" href="#__codelineno-41-23"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>raw
+<a id="__codelineno-41-24" name="__codelineno-41-24" href="#__codelineno-41-24"></a>
+<a id="__codelineno-41-25" name="__codelineno-41-25" href="#__codelineno-41-25"></a><span class="c1"># 7. Push to deploy</span>
+<a id="__codelineno-41-26" name="__codelineno-41-26" href="#__codelineno-41-26"></a>git<span class="w"> </span>add<span class="w"> </span>.<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Initial app&quot;</span>
+<a id="__codelineno-41-27" name="__codelineno-41-27" href="#__codelineno-41-27"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>main
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["search.suggest", "search.highlight", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

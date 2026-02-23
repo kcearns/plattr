@@ -1,0 +1,1860 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="An internal developer platform — Vercel-like experience on Kubernetes">
+      
+      
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../crds/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>CLI - Plattr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Plattr" class="md-header__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plattr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Plattr" class="md-nav__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Plattr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plattr-team-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plattr Team Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plattr-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-deploy-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr deploy local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-undeploy-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr undeploy local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-destroy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra destroy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-preview-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr preview start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-preview-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr preview list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db seed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db connect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-redis-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr redis reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-search-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr search reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-unset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env unset
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CRDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plattr-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plattr.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plattr-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr build
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-deploy-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr deploy local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-undeploy-local" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr undeploy local
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-infra-destroy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr infra destroy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-preview-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr preview start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-preview-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr preview list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db migrate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db seed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-connect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db connect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-db-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr db reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-redis-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr redis reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-search-reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr search reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plattr-env-unset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        plattr env unset
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cli-reference">CLI Reference<a class="headerlink" href="#cli-reference" title="Permanent link">&para;</a></h1>
+<p>The <code>plattr</code> CLI is the developer interface to the platform. Install it with <code>npm install -g @plattr/cli</code>.</p>
+<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
+<h3 id="plattr-init"><code>plattr init</code><a class="headerlink" href="#plattr-init" title="Permanent link">&para;</a></h3>
+<p>Initialize a new app for the platform.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>plattr<span class="w"> </span>init
+</code></pre></div>
+<p>Interactive prompts:
+1. App name (lowercase alphanumeric with hyphens)
+2. Framework (auto-detected: <code>nextjs</code>, <code>rails</code>, <code>static</code>, <code>docker</code>)
+3. Enable database?
+4. Enable storage?
+5. Enable authentication?
+6. Enable Redis cache?
+7. Enable OpenSearch?</p>
+<p><strong>Creates:</strong>
+- <code>plattr.yaml</code> — app configuration
+- <code>.github/workflows/plattr-deploy.yml</code> — CI/CD pipeline</p>
+<hr />
+<h3 id="plattr-dev"><code>plattr dev</code><a class="headerlink" href="#plattr-dev" title="Permanent link">&para;</a></h3>
+<p>Set up local infrastructure and prepare the environment for development.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>plattr<span class="w"> </span>dev<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p, --port &lt;port&gt;</code></td>
+<td>Port hint (reserved for future use)</td>
+<td><code>3000</code> (or <code>local.port</code> from config)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What it does:</strong></p>
+<ol>
+<li>Creates a local Kind cluster (if not already running)</li>
+<li>Starts a local container registry on port 5050</li>
+<li>Applies Kubernetes manifests for enabled services (PostgreSQL, PostgREST, MinIO, Keycloak, Redis, OpenSearch)</li>
+<li>Waits for all services to be ready</li>
+<li>Sets up database schema and roles</li>
+<li>Creates storage buckets</li>
+<li>Starts detached <code>kubectl port-forward</code> processes</li>
+<li>Writes environment variables to <code>.plattr/{appName}.env</code></li>
+<li>Prints export commands and service URLs</li>
+</ol>
+<p><strong>Important:</strong> <code>plattr dev</code> does <strong>not</strong> start your application's dev server. After it completes, source the env file and start your dev server manually:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>plattr<span class="w"> </span>dev
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">source</span><span class="w"> </span>.plattr/my-app.env
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npx<span class="w"> </span>next<span class="w"> </span>dev<span class="w">          </span><span class="c1"># Next.js</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>bin/rails<span class="w"> </span>server<span class="w">      </span><span class="c1"># Rails</span>
+</code></pre></div>
+<p><strong>Services started</strong> (conditional on <code>plattr.yaml</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port</th>
+<th>Condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL</td>
+<td>5432</td>
+<td>Always</td>
+</tr>
+<tr>
+<td>PostgREST</td>
+<td>3001</td>
+<td><code>database.enabled: true</code></td>
+</tr>
+<tr>
+<td>MinIO</td>
+<td>9000, 9001</td>
+<td><code>storage.enabled: true</code></td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>8080</td>
+<td><code>auth.enabled: true</code></td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>6379</td>
+<td><code>redis.enabled: true</code></td>
+</tr>
+<tr>
+<td>OpenSearch</td>
+<td>9200</td>
+<td><code>search.enabled: true</code></td>
+</tr>
+<tr>
+<td>OpenSearch Dashboards</td>
+<td>5601</td>
+<td><code>search.enabled: true</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>State files</strong> (in <code>.plattr/</code> directory):
+- <code>{appName}.env</code> — environment variables (sourceable)
+- <code>{appName}.pids</code> — port-forward process IDs</p>
+<hr />
+<h3 id="plattr-test"><code>plattr test</code><a class="headerlink" href="#plattr-test" title="Permanent link">&para;</a></h3>
+<p>Run tests against local infrastructure.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>plattr<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--ci</code></td>
+<td>Run Dagger-based ephemeral tests (clean state)</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Without <code>--ci</code></strong> (default): Auto-detects the test runner and runs tests locally using the environment from <code>.plattr/{appName}.env</code>. Checks that infrastructure is running before starting.</p>
+<p>Supported test runners (auto-detected):
+- <strong>Vitest</strong> — detects <code>vitest.config.{ts,js,mts}</code>
+- <strong>Jest</strong> — detects <code>jest.config.{ts,js,mjs}</code>
+- <strong>npm test</strong> — uses <code>package.json</code> test script (if it exists and isn't the default)
+- <strong>RSpec</strong> — detects <code>spec/**/*.rb</code> (Rails)
+- <strong>Minitest</strong> — detects <code>test/**/*.rb</code> (Rails)</p>
+<p><strong>With <code>--ci</code></strong>: Runs <code>dagger call test --source=.</code> for fully ephemeral tests with clean database state.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Run local tests (requires plattr dev running)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>plattr<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Run ephemeral tests via Dagger</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>plattr<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--ci
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-build"><code>plattr build</code><a class="headerlink" href="#plattr-build" title="Permanent link">&para;</a></h3>
+<p>Build a production container image.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>plattr<span class="w"> </span>build
+</code></pre></div>
+<p>Runs <code>dagger call build --source=.</code> to produce an optimized production image based on the detected framework.</p>
+<hr />
+<h3 id="plattr-deploy-local"><code>plattr deploy local</code><a class="headerlink" href="#plattr-deploy-local" title="Permanent link">&para;</a></h3>
+<p>Build, test, scan, and deploy the app to the local Kind cluster.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-p, --port &lt;port&gt;</code></td>
+<td>Port for the deployed app</td>
+<td><code>3000</code> (or <code>local.port</code> from config)</td>
+</tr>
+<tr>
+<td><code>--skip-tests</code></td>
+<td>Skip the test step</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>--skip-scan</code></td>
+<td>Skip the Trivy security scan</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>--fail-on-scan</code></td>
+<td>Exit with error if vulnerabilities found (no prompt)</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pipeline steps:</strong></p>
+<ol>
+<li><strong>Tests</strong> — Auto-detects and runs tests (skippable with <code>--skip-tests</code>)</li>
+<li><strong>Build</strong> — Builds production image via Dagger</li>
+<li><strong>Push</strong> — Pushes image to local registry (<code>localhost:5050</code>)</li>
+<li><strong>Security Scan</strong> — Runs Trivy scan for HIGH/CRITICAL vulnerabilities (skippable with <code>--skip-scan</code>)</li>
+<li><strong>Deploy</strong> — Applies Kubernetes manifests (ConfigMap, Deployment, Service) and waits for rollout</li>
+<li><strong>Port-forward</strong> — Starts a detached port-forward to the deployed app</li>
+</ol>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Full pipeline</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Quick deploy (skip tests and scan)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--skip-tests<span class="w"> </span>--skip-scan
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># CI-style (fail on vulnerabilities)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--fail-on-scan
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-undeploy-local"><code>plattr undeploy local</code><a class="headerlink" href="#plattr-undeploy-local" title="Permanent link">&para;</a></h3>
+<p>Remove the app deployment from the local Kind cluster.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>plattr<span class="w"> </span>undeploy<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p>Kills tracked port-forward processes and deletes the Deployment, Service, and ConfigMap from the cluster. Does <strong>not</strong> remove the infrastructure (PostgreSQL, MinIO, etc.) — use <code>plattr infra destroy</code> for that.</p>
+<hr />
+<h3 id="plattr-infra-init"><code>plattr infra init</code><a class="headerlink" href="#plattr-infra-init" title="Permanent link">&para;</a></h3>
+<p>Interactively generate AWS infrastructure configuration.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>init
+</code></pre></div>
+<p>Walks through a guided setup to collect AWS account, region, EKS cluster settings, domain configuration, and add-on preferences. Writes a <code>packages/cdk/cdk.json</code> with all CDK context values populated, replacing the need to pass individual <code>-c</code> flags to <code>cdk deploy</code>.</p>
+<p>Supports two environment types:</p>
+<ul>
+<li><strong>Non-prod</strong> — choose between CDK-managed infrastructure (new VPC + EKS + Aurora) or connecting to existing infrastructure (provide ARNs and endpoints).</li>
+<li><strong>Production</strong> — configures EKS, Aurora, OpenSearch, and optional cross-account settings.</li>
+</ul>
+<p>After running, follow the printed next steps to bootstrap and deploy:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>packages/cdk
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>npm<span class="w"> </span>install
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>--all
+</code></pre></div>
+<hr />
+<h3 id="plattr-infra-status"><code>plattr infra status</code><a class="headerlink" href="#plattr-infra-status" title="Permanent link">&para;</a></h3>
+<p>Show local infrastructure status.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>status
+</code></pre></div>
+<p>Displays all pods in the <code>plattr-local</code> namespace.</p>
+<hr />
+<h3 id="plattr-infra-stop"><code>plattr infra stop</code><a class="headerlink" href="#plattr-infra-stop" title="Permanent link">&para;</a></h3>
+<p>Stop local infrastructure (data preserved).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>stop
+</code></pre></div>
+<p>Kills port-forward processes and scales all deployments to zero replicas. Data in persistent volumes is preserved. Run <code>plattr dev</code> to restart.</p>
+<hr />
+<h3 id="plattr-infra-start"><code>plattr infra start</code><a class="headerlink" href="#plattr-infra-start" title="Permanent link">&para;</a></h3>
+<p>Start local infrastructure.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>start
+</code></pre></div>
+<p>Scales all deployments back to one replica. Use this after <code>plattr infra stop</code> to resume without a full <code>plattr dev</code> cycle.</p>
+<hr />
+<h3 id="plattr-infra-destroy"><code>plattr infra destroy</code><a class="headerlink" href="#plattr-infra-destroy" title="Permanent link">&para;</a></h3>
+<p>Delete local cluster and all data.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>destroy
+</code></pre></div>
+<p>Kills port-forward processes, clears all state files (<code>.plattr/</code>), deletes the Kind cluster, and removes the local container registry. All data is lost. Run <code>plattr dev</code> to recreate from scratch.</p>
+<hr />
+<h3 id="plattr-preview-start"><code>plattr preview start</code><a class="headerlink" href="#plattr-preview-start" title="Permanent link">&para;</a></h3>
+<p>Start a local preview environment for a pull request.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span>&lt;number&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--pr &lt;number&gt;</code></td>
+<td>Pull request number (required)</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>-p, --port &lt;port&gt;</code></td>
+<td>Port for the preview app</td>
+<td><code>3100</code></td>
+</tr>
+</tbody>
+</table>
+<p>Creates an isolated environment with PR-specific database schema and storage.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span><span class="w"> </span>--port<span class="w"> </span><span class="m">3200</span>
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-preview-list"><code>plattr preview list</code><a class="headerlink" href="#plattr-preview-list" title="Permanent link">&para;</a></h3>
+<p>List active remote preview environments.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>list
+</code></pre></div>
+<p><strong>Output:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>PR   App          Phase     URL                                          Expires
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>42   my-app       Running   https://pr-42.my-app.preview.company.dev     2024-01-15T12:00:00Z
+</code></pre></div></p>
+<p>Queries <code>PreviewEnvironment</code> CRDs via kubectl.</p>
+<hr />
+<h3 id="plattr-db-migrate"><code>plattr db migrate</code><a class="headerlink" href="#plattr-db-migrate" title="Permanent link">&para;</a></h3>
+<p>Run database migrations.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--engine &lt;engine&gt;</code></td>
+<td>Migration engine: <code>prisma</code>, <code>knex</code>, <code>raw</code></td>
+<td>Auto-detect</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Engines:</strong>
+- <code>prisma</code> — runs <code>npx prisma migrate deploy</code>
+- <code>knex</code> — runs <code>npx knex migrate:latest</code>
+- <code>raw</code> — executes <code>.sql</code> files from the migrations directory</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>prisma
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-db-seed"><code>plattr db seed</code><a class="headerlink" href="#plattr-db-seed" title="Permanent link">&para;</a></h3>
+<p>Seed the database with test data.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>seed<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--file &lt;path&gt;</code></td>
+<td>Path to seed file</td>
+<td><code>seed.sql</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>seed
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>seed<span class="w"> </span>--file<span class="w"> </span>seeds/test-data.sql
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-db-shell"><code>plattr db shell</code><a class="headerlink" href="#plattr-db-shell" title="Permanent link">&para;</a></h3>
+<p>Open an interactive <code>psql</code> shell connected to the local database.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>shell
+</code></pre></div>
+<hr />
+<h3 id="plattr-db-connect"><code>plattr db connect</code><a class="headerlink" href="#plattr-db-connect" title="Permanent link">&para;</a></h3>
+<p>Connect to a remote database via <code>psql</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+</tbody>
+</table>
+<p>Retrieves the <code>DATABASE_URL</code> from the Kubernetes Secret (<code>{appName}-db</code>) and opens an interactive <code>psql</code> session.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>plattr<span class="w"> </span>db<span class="w"> </span>connect<span class="w"> </span>--env<span class="w"> </span>staging
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-db-reset"><code>plattr db reset</code><a class="headerlink" href="#plattr-db-reset" title="Permanent link">&para;</a></h3>
+<p>Reset the local database (deletes all data).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume claim and restarts the PostgreSQL deployment. Run <code>plattr dev</code> to recreate schemas.</p>
+<hr />
+<h3 id="plattr-redis-reset"><code>plattr redis reset</code><a class="headerlink" href="#plattr-redis-reset" title="Permanent link">&para;</a></h3>
+<p>Reset local Redis (deletes all data).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>plattr<span class="w"> </span>redis<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume claim and restarts the Redis deployment.</p>
+<hr />
+<h3 id="plattr-search-reset"><code>plattr search reset</code><a class="headerlink" href="#plattr-search-reset" title="Permanent link">&para;</a></h3>
+<p>Reset local OpenSearch (deletes all data).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>plattr<span class="w"> </span>search<span class="w"> </span>reset
+</code></pre></div>
+<p>Deletes the persistent volume claim and restarts the OpenSearch deployment.</p>
+<hr />
+<h3 id="plattr-status"><code>plattr status</code><a class="headerlink" href="#plattr-status" title="Permanent link">&para;</a></h3>
+<p>Show application status and conditions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>plattr<span class="w"> </span>status<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+<tr>
+<td><code>--pr &lt;number&gt;</code></td>
+<td>PR number (for preview envs)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Output:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>Application: my-app
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>Environment: production
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>Phase:       Running
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a>URL:         https://my-app.platform.company.dev
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>Conditions:
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>  DatabaseReady
+<a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>  StorageReady
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a>  AuthReady
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>  DeploymentReady
+<a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>  IngressReady
+</code></pre></div></p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>plattr<span class="w"> </span>status
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>plattr<span class="w"> </span>status<span class="w"> </span>--env<span class="w"> </span>staging
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>plattr<span class="w"> </span>status<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-logs"><code>plattr logs</code><a class="headerlink" href="#plattr-logs" title="Permanent link">&para;</a></h3>
+<p>Stream application logs.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>plattr<span class="w"> </span>logs<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+<tr>
+<td><code>-f, --follow</code></td>
+<td>Stream logs continuously</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>--tail &lt;lines&gt;</code></td>
+<td>Number of recent lines to show</td>
+<td>All</td>
+</tr>
+<tr>
+<td><code>--pr &lt;number&gt;</code></td>
+<td>PR number (for preview envs)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Runs <code>kubectl logs</code> with <code>--all-containers</code> to include both app and PostgREST sidecar logs.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>plattr<span class="w"> </span>logs
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>plattr<span class="w"> </span>logs<span class="w"> </span>-f
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>plattr<span class="w"> </span>logs<span class="w"> </span>--tail<span class="w"> </span><span class="m">100</span><span class="w"> </span>--env<span class="w"> </span>staging
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>plattr<span class="w"> </span>logs<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span><span class="w"> </span>-f
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-env-set"><code>plattr env set</code><a class="headerlink" href="#plattr-env-set" title="Permanent link">&para;</a></h3>
+<p>Set one or more environment variables.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span>&lt;<span class="nv">KEY</span><span class="o">=</span>VALUE...&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+</tbody>
+</table>
+<p>Creates or updates a ConfigMap (<code>{appName}-env</code>) and restarts the Deployment to apply changes.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>abc123
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">API_KEY</span><span class="o">=</span>abc123<span class="w"> </span><span class="nv">FEATURE_FLAG</span><span class="o">=</span><span class="nb">true</span>
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">set</span><span class="w"> </span>--env<span class="w"> </span>staging<span class="w"> </span><span class="nv">DEBUG</span><span class="o">=</span><span class="nb">true</span>
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-env-list"><code>plattr env list</code><a class="headerlink" href="#plattr-env-list" title="Permanent link">&para;</a></h3>
+<p>List all environment variables (Plattr-managed and user-defined).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>plattr<span class="w"> </span>env<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>plattr<span class="w"> </span>env<span class="w"> </span>list
+<a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>plattr<span class="w"> </span>env<span class="w"> </span>list<span class="w"> </span>--env<span class="w"> </span>staging
+</code></pre></div></p>
+<hr />
+<h3 id="plattr-env-unset"><code>plattr env unset</code><a class="headerlink" href="#plattr-env-unset" title="Permanent link">&para;</a></h3>
+<p>Remove an environment variable.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>&lt;KEY&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--env &lt;environment&gt;</code></td>
+<td>Target environment</td>
+<td><code>production</code></td>
+</tr>
+</tbody>
+</table>
+<p>Removes the key from the ConfigMap and restarts the Deployment.</p>
+<p><strong>Example:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>API_KEY
+<a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>plattr<span class="w"> </span>env<span class="w"> </span><span class="nb">unset</span><span class="w"> </span>--env<span class="w"> </span>staging<span class="w"> </span>DEBUG
+</code></pre></div></p>
+<hr />
+<h2 id="environment-resolution">Environment Resolution<a class="headerlink" href="#environment-resolution" title="Permanent link">&para;</a></h2>
+<p>Commands that accept <code>--env</code> map environment names to Kubernetes namespaces:</p>
+<table>
+<thead>
+<tr>
+<th><code>--env</code> value</th>
+<th>Namespace</th>
+<th>Resource Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>production</code></td>
+<td><code>production</code></td>
+<td><code>{appName}</code></td>
+</tr>
+<tr>
+<td><code>staging</code></td>
+<td><code>staging</code></td>
+<td><code>{appName}</code></td>
+</tr>
+<tr>
+<td><code>uat</code></td>
+<td><code>uat</code></td>
+<td><code>{appName}</code></td>
+</tr>
+<tr>
+<td><code>preview</code> (with <code>--pr</code>)</td>
+<td><code>preview-{appName}-pr-{N}</code></td>
+<td><code>{appName}-pr{N}</code></td>
+</tr>
+</tbody>
+</table>
+<p>The app name is read from <code>plattr.yaml</code> in the current directory.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["search.suggest", "search.highlight", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

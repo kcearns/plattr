@@ -1,0 +1,2372 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="An internal developer platform — Vercel-like experience on Kubernetes">
+      
+      
+      
+      
+        <link rel="prev" href="../developer-guide/">
+      
+      
+        <link rel="next" href="../reference/architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Plattr Team Guide - Plattr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plattr-team-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Plattr" class="md-header__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plattr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plattr Team Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Plattr" class="md-nav__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Plattr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plattr Team Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plattr Team Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdk-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDK Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CDK Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-start-with-plattr-infra-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start with plattr infra init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-deployment-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Deployment Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manual Deployment Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-cdk-managed-infrastructure-recommended-for-new-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: CDK-managed infrastructure (recommended for new environments)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-bring-your-own-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Bring your own infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-1-plattrinfrastack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 1: PlattrInfraStack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-2-plattroperatorstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 2: PlattrOperatorStack
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stack 2: PlattrOperatorStack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-c-production-account-separate-aws-account-with-managed-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option C: Production account (separate AWS account with managed services)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-3-plattrcicdstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 3: PlattrCicdStack
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operator-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operator Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-operator-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the Operator Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-operator-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Operator Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leader-election" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leader Election
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-the-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling the Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crd-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRD Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-crds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing CRDs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verifying-crds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying CRDs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating an Application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-application-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking Application Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-add-ons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supporting Add-Ons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supporting Add-Ons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cert-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cert-manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-dns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        external-dns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress-nginx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ingress-nginx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keycloak
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Quotas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-stuck-in-provisioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Stuck in "Provisioning"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-stuck-in-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Stuck in "Failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preview-environment-not-cleaning-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Environment Not Cleaning Up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgrest-sidecar-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgREST Sidecar Not Working
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-connection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Connection Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-crash-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Crash Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-2-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day-2 Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Day-2 Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-the-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrading the Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-postgrest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrading PostgREST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-new-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a New Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rotating-database-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotating Database Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CRDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plattr-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plattr.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cdk-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDK Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CDK Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-start-with-plattr-infra-init" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start with plattr infra init
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-deployment-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Deployment Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Manual Deployment Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-cdk-managed-infrastructure-recommended-for-new-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: CDK-managed infrastructure (recommended for new environments)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-bring-your-own-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Bring your own infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-1-plattrinfrastack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 1: PlattrInfraStack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-2-plattroperatorstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 2: PlattrOperatorStack
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Stack 2: PlattrOperatorStack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-c-production-account-separate-aws-account-with-managed-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option C: Production account (separate AWS account with managed services)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stack-3-plattrcicdstack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack 3: PlattrCicdStack
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operator-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Operator Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-operator-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the Operator Works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-operator-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Operator Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leader-election" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leader Election
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-the-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling the Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crd-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRD Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-crds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing CRDs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verifying-crds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying CRDs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-an-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating an Application
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-application-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking Application Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-add-ons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supporting Add-Ons
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supporting Add-Ons">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cert-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cert-manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-dns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        external-dns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress-nginx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ingress-nginx
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keycloak
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prometheus-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prometheus Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Quotas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#application-stuck-in-provisioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Stuck in "Provisioning"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-stuck-in-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Stuck in "Failed"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preview-environment-not-cleaning-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preview Environment Not Cleaning Up
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#postgrest-sidecar-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgREST Sidecar Not Working
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-connection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Connection Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-crash-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operator Crash Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#day-2-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Day-2 Operations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Day-2 Operations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-the-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrading the Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#upgrading-postgrest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrading PostgREST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-infrastructure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling Infrastructure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-new-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a New Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rotating-database-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rotating Database Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="plattr-team-guide">Plattr Team Guide<a class="headerlink" href="#plattr-team-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers deploying, operating, and maintaining Plattr. It assumes familiarity with Kubernetes, AWS, and infrastructure tooling.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>AWS CLI</strong> configured with admin-level credentials</li>
+<li><strong>AWS CDK</strong> v2 — <code>npm install -g aws-cdk</code></li>
+<li><strong>kubectl</strong> connected to your EKS cluster</li>
+<li><strong>Helm</strong> v3</li>
+<li><strong>Node.js</strong> 18+ and npm</li>
+<li><strong>Docker</strong> (for CDK asset bundling)</li>
+</ul>
+<h2 id="infrastructure-overview">Infrastructure Overview<a class="headerlink" href="#infrastructure-overview" title="Permanent link">&para;</a></h2>
+<p>Plattr uses a <strong>two-account architecture</strong>: non-prod services run containerized on a single EKS cluster, while production runs in a separate AWS account with managed services.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Non-Prod Account                         Prod Account
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── EKS (plattr-nonprod)                 ├── EKS (plattr-prod)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── plattr-system namespace          │   ├── plattr-system namespace
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   │   ├── Operator (container mode)    │   │   ├── Operator (managed mode)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   │   ├── PostgreSQL pod               │   │   ├── Keycloak (StatefulSet)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   │   ├── MinIO pod                    │   │   ├── cert-manager, ext-dns, nginx
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   │   ├── Redis pod                    │   │   └── (no container services)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   │   ├── OpenSearch pod               │   ├── production namespace
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   │   ├── Keycloak pod                 │   └── (no staging/uat/preview)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   │   └── cert-manager, ext-dns...     │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── staging namespace                ├── Aurora PostgreSQL Serverless v2
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── uat namespace                    ├── ElastiCache (Redis 7)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   └── preview-* namespaces (dynamic)   ├── OpenSearch Service
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│                                         ├── S3
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>├── ECR                                   ├── ECR (cross-account pull)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── plattr-operator                  └── Route 53
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   └── plattr-apps
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── S3 (bucket-per-app)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>├── Secrets Manager
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── plattr/db-admin
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>└── Route 53
+</code></pre></div>
+<h2 id="cdk-deployment">CDK Deployment<a class="headerlink" href="#cdk-deployment" title="Permanent link">&para;</a></h2>
+<p>The infrastructure is defined in three CDK stacks. All commands run from <code>packages/cdk</code>.</p>
+<h3 id="quick-start-with-plattr-infra-init">Quick Start with <code>plattr infra init</code><a class="headerlink" href="#quick-start-with-plattr-infra-init" title="Permanent link">&para;</a></h3>
+<p>The fastest way to configure CDK context values is the interactive init command:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>init
+</code></pre></div>
+<p>This walks you through environment type, AWS account/region, cluster sizing, domain config, and add-ons, then writes a <code>packages/cdk/cdk.json</code> with all values populated. After that:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>packages/cdk
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>npm<span class="w"> </span>install
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>--all
+</code></pre></div>
+<h3 id="manual-deployment-modes">Manual Deployment Modes<a class="headerlink" href="#manual-deployment-modes" title="Permanent link">&para;</a></h3>
+<p>Alternatively, you can pass context values directly via <code>-c</code> flags. There are two modes depending on whether you want CDK to manage the foundational infrastructure (VPC, EKS, Aurora) or you're bringing your own.</p>
+<h4 id="option-a-cdk-managed-infrastructure-recommended-for-new-environments">Option A: CDK-managed infrastructure (recommended for new environments)<a class="headerlink" href="#option-a-cdk-managed-infrastructure-recommended-for-new-environments" title="Permanent link">&para;</a></h4>
+<p>Set <code>-c useInfraStack=true</code> and CDK provisions everything end-to-end. The <code>PlattrInfraStack</code> creates the VPC, EKS cluster, and Aurora database, then wires them directly into the operator stack — no manual ARN/endpoint copying required.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># First-time bootstrap (once per account/region)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap<span class="w"> </span>aws://ACCOUNT_ID/ca-central-1
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Deploy infra + operator together</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrInfraStack<span class="w"> </span>PlattrOperatorStack<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">useInfraStack</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">account</span><span class="o">=</span>ACCOUNT_ID<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">region</span><span class="o">=</span>ca-central-1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">baseDomain</span><span class="o">=</span>nonprod.yourcompany.dev<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">hostedZoneId</span><span class="o">=</span>Z0123456789
+</code></pre></div>
+<p>CDK handles cross-stack references automatically. The infra stack exports the cluster name, OIDC provider ARN, Aurora endpoint, and security group ID — the operator stack consumes them without any manual input.</p>
+<h4 id="option-b-bring-your-own-infrastructure">Option B: Bring your own infrastructure<a class="headerlink" href="#option-b-bring-your-own-infrastructure" title="Permanent link">&para;</a></h4>
+<p>If you already have an EKS cluster and Aurora database (or manage them outside CDK), keep the default mode and pass the values via <code>-c</code> context flags:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrOperatorStack<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">eksClusterName</span><span class="o">=</span>my-eks-cluster<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">kubectlRoleArn</span><span class="o">=</span>arn:aws:iam::123456789012:role/my-kubectl-role<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">oidcProviderArn</span><span class="o">=</span>arn:aws:iam::123456789012:oidc-provider/oidc.eks...<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">auroraEndpoint</span><span class="o">=</span>my-aurora.cluster-xxx.ca-central-1.rds.amazonaws.com<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">auroraSgId</span><span class="o">=</span>sg-xxxxx<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">baseDomain</span><span class="o">=</span>nonprod.yourcompany.dev<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">hostedZoneId</span><span class="o">=</span>Z0123456789
+</code></pre></div>
+<p>See <a href="../step1-eks-aurora-setup/#appendix-a-manual-setup-alternative">Step 1: Manual Setup</a> for how to create these resources with <code>eksctl</code> and AWS CLI.</p>
+<h3 id="stack-1-plattrinfrastack">Stack 1: PlattrInfraStack<a class="headerlink" href="#stack-1-plattrinfrastack" title="Permanent link">&para;</a></h3>
+<p>Provisions the foundational AWS infrastructure. Only deployed when using <code>-c useInfraStack=true</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Preview changes</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>diff<span class="w"> </span>PlattrInfraStack<span class="w"> </span>-c<span class="w"> </span><span class="nv">useInfraStack</span><span class="o">=</span><span class="nb">true</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Deploy</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrInfraStack<span class="w"> </span>-c<span class="w"> </span><span class="nv">useInfraStack</span><span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
+<p><strong>What it creates:</strong>
+- <strong>VPC</strong> with public/private subnets across 2 AZs, 1 NAT gateway
+- <strong>EKS cluster</strong> (K8s 1.33) with Auto Mode (compute fully managed by EKS)
+- <strong>kubectl IAM role</strong> for CDK and manual cluster access
+- <strong>OIDC provider</strong> for IRSA (auto-enabled by the EKS construct)
+- <strong>Aurora Serverless v2</strong> (PostgreSQL 16.4, 0.5-4 ACU scaling, <code>plattr</code> default database)
+- <strong>Security group rule</strong> allowing EKS cluster SG → Aurora on port 5432</p>
+<p><strong>Stack outputs:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ClusterName</code></td>
+<td>EKS cluster name</td>
+</tr>
+<tr>
+<td><code>KubectlRoleArn</code></td>
+<td>IAM role for kubectl access</td>
+</tr>
+<tr>
+<td><code>OidcProviderArn</code></td>
+<td>OIDC provider ARN for IRSA</td>
+</tr>
+<tr>
+<td><code>AuroraEndpoint</code></td>
+<td>Aurora cluster writer endpoint</td>
+</tr>
+<tr>
+<td><code>AuroraSecurityGroupId</code></td>
+<td>Aurora security group ID</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Customizable props:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Context key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eksClusterName</code></td>
+<td><code>plattr-nonprod</code></td>
+<td>EKS cluster name</td>
+</tr>
+<tr>
+<td><code>auroraMinCapacity</code></td>
+<td><code>0.5</code></td>
+<td>Aurora Serverless v2 min ACU</td>
+</tr>
+<tr>
+<td><code>auroraMaxCapacity</code></td>
+<td><code>4</code></td>
+<td>Aurora Serverless v2 max ACU</td>
+</tr>
+</tbody>
+</table>
+<h3 id="stack-2-plattroperatorstack">Stack 2: PlattrOperatorStack<a class="headerlink" href="#stack-2-plattroperatorstack" title="Permanent link">&para;</a></h3>
+<p>Deploys the operator, add-ons, CRDs, and environment namespaces.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Review what will be deployed</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>diff<span class="w"> </span>PlattrOperatorStack
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Deploy</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrOperatorStack
+</code></pre></div>
+<p><strong>What it creates:</strong>
+- <strong>plattr-system namespace</strong> with CRDs (Application, PreviewEnvironment)
+- <strong>Secrets Manager secret</strong> (<code>plattr/db-admin</code>) for Aurora admin credentials
+- <strong>ECR repository</strong> (<code>plattr-operator</code>) with 25-image retention
+- <strong>IRSA role</strong> for the operator ServiceAccount with permissions for S3, Secrets Manager, and STS
+- <strong>Operator Helm release</strong> with configuration (DB secret ARN, host, region, base domain, Keycloak URL)
+- <strong>Environment namespaces</strong> (staging, uat, production) with resource quotas
+- <strong>Add-ons</strong> (all enabled by default):
+  - cert-manager + Let's Encrypt ClusterIssuer
+  - external-dns with Route 53
+  - ingress-nginx with AWS NLB
+  - Keycloak 26.0 (2 replicas, external PostgreSQL, HTTPS Ingress)</p>
+<p><strong>Additional context flags (operator stack):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>baseDomain</code></td>
+<td><code>platform.company.dev</code></td>
+<td>Base domain for app ingresses</td>
+</tr>
+<tr>
+<td><code>hostedZoneId</code></td>
+<td>—</td>
+<td>Route 53 hosted zone ID</td>
+</tr>
+<tr>
+<td><code>installCertManager</code></td>
+<td><code>true</code></td>
+<td>Install cert-manager</td>
+</tr>
+<tr>
+<td><code>installExternalDns</code></td>
+<td><code>true</code></td>
+<td>Install external-dns</td>
+</tr>
+<tr>
+<td><code>installIngressNginx</code></td>
+<td><code>true</code></td>
+<td>Install ingress-nginx</td>
+</tr>
+<tr>
+<td><code>installKeycloak</code></td>
+<td><code>true</code></td>
+<td>Install Keycloak</td>
+</tr>
+</tbody>
+</table>
+<h4 id="option-c-production-account-separate-aws-account-with-managed-services">Option C: Production account (separate AWS account with managed services)<a class="headerlink" href="#option-c-production-account-separate-aws-account-with-managed-services" title="Permanent link">&para;</a></h4>
+<p>Set <code>-c target=prod</code> to deploy production infrastructure with AWS managed services (Aurora, ElastiCache, OpenSearch) in a dedicated account.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Bootstrap the prod account</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap<span class="w"> </span>aws://PROD_ACCOUNT_ID/ca-central-1
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Deploy prod infra + operator</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrProdInfraStack<span class="w"> </span>PlattrProdOperatorStack<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">target</span><span class="o">=</span>prod<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">account</span><span class="o">=</span>PROD_ACCOUNT_ID<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">region</span><span class="o">=</span>ca-central-1<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">baseDomain</span><span class="o">=</span>prod.yourcompany.dev<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">hostedZoneId</span><span class="o">=</span>Z987654321<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">  </span>-c<span class="w"> </span><span class="nv">nonprodAccountId</span><span class="o">=</span>NONPROD_ACCOUNT_ID
+</code></pre></div>
+<p>The prod stack creates:
+- <strong>EKS cluster</strong> (<code>plattr-prod</code>) with Auto Mode (compute fully managed by EKS)
+- <strong>Aurora Serverless v2</strong> with higher ACUs (1-8 default)
+- <strong>ElastiCache Serverless</strong> (Redis 7) — operator uses <code>REDIS_ENDPOINT</code>
+- <strong>OpenSearch Service</strong> (2-node t3.medium.search) — operator uses <code>OPENSEARCH_ENDPOINT</code>
+- <strong>Cross-account ECR pull</strong> role for pulling images from non-prod
+- Only the <code>production</code> namespace (no staging/uat/preview)</p>
+<p>The operator runs in <strong>managed mode</strong>: instead of pointing to in-cluster pods, it creates ConfigMaps with endpoints for the AWS managed services.</p>
+<p>See <a href="../step2-prod-account-setup/">Production Account Setup</a> for the full step-by-step guide.</p>
+<h3 id="stack-3-plattrcicdstack">Stack 3: PlattrCicdStack<a class="headerlink" href="#stack-3-plattrcicdstack" title="Permanent link">&para;</a></h3>
+<p>Sets up CI/CD roles for GitHub Actions.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrCicdStack
+</code></pre></div>
+<p><strong>What it creates:</strong>
+- <strong>GitHub OIDC provider</strong> for keyless authentication
+- <strong>ECR repository</strong> (<code>plattr-apps</code>) with 50-image retention
+- <strong>CI Deploy Role</strong> — non-prod deployments from any branch (ECR push + EKS describe)
+- <strong>Prod Deploy Role</strong> — production deployments from main branch only</p>
+<p><strong>Context flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>githubOrg</code></td>
+<td>—</td>
+<td>GitHub organization name</td>
+</tr>
+<tr>
+<td><code>githubRepoFilter</code></td>
+<td>—</td>
+<td>Optional repo name filter</td>
+</tr>
+<tr>
+<td><code>prodAccountId</code></td>
+<td>—</td>
+<td>Production AWS account ID (enables cross-account deploy)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="operator-management">Operator Management<a class="headerlink" href="#operator-management" title="Permanent link">&para;</a></h2>
+<h3 id="how-the-operator-works">How the Operator Works<a class="headerlink" href="#how-the-operator-works" title="Permanent link">&para;</a></h3>
+<p>The operator watches two Custom Resource types:</p>
+<ol>
+<li><strong>Application</strong> — represents a deployed app. The operator reconciles it into database schemas, S3 buckets, Keycloak realms, Deployments, Services, Ingresses, and HPAs.</li>
+<li><strong>PreviewEnvironment</strong> — represents a PR preview. The operator creates an isolated namespace with its own database schema, storage, and workload.</li>
+</ol>
+<p>Reconciliation is triggered by Kubernetes informers (watch events). The operator uses generation-based tracking to avoid infinite loops from status updates.</p>
+<h3 id="operator-configuration">Operator Configuration<a class="headerlink" href="#operator-configuration" title="Permanent link">&para;</a></h3>
+<p>The operator reads configuration from environment variables:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+<th>Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DB_ADMIN_URL</code></td>
+<td>PostgreSQL admin connection string (dev mode)</td>
+<td>One of these</td>
+</tr>
+<tr>
+<td><code>DB_SECRET_ARN</code></td>
+<td>AWS Secrets Manager ARN (prod mode)</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>DB_HOST</code></td>
+<td>Aurora cluster endpoint</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>AWS_REGION</code></td>
+<td>AWS region</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>BASE_DOMAIN</code></td>
+<td>Plattr base domain</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>KEYCLOAK_URL</code></td>
+<td>Keycloak base URL</td>
+<td>If auth enabled</td>
+</tr>
+<tr>
+<td><code>KEYCLOAK_ADMIN_USER</code></td>
+<td>Keycloak admin username</td>
+<td>If auth enabled</td>
+</tr>
+<tr>
+<td><code>KEYCLOAK_ADMIN_PASSWORD</code></td>
+<td>Keycloak admin password</td>
+<td>If auth enabled</td>
+</tr>
+<tr>
+<td><code>REDIS_ENDPOINT</code></td>
+<td>ElastiCache Redis endpoint (managed mode)</td>
+<td>No (empty = container mode)</td>
+</tr>
+<tr>
+<td><code>OPENSEARCH_ENDPOINT</code></td>
+<td>OpenSearch Service endpoint (managed mode)</td>
+<td>No (empty = container mode)</td>
+</tr>
+<tr>
+<td><code>LEADER_ELECTION</code></td>
+<td>Enable leader election (<code>true</code>/<code>false</code>)</td>
+<td>No (default: false)</td>
+</tr>
+<tr>
+<td><code>LEASE_NAMESPACE</code></td>
+<td>Namespace for leader lease</td>
+<td>If leader election on</td>
+</tr>
+<tr>
+<td><code>AWS_ENDPOINT_URL</code></td>
+<td>Override AWS endpoint (for LocalStack)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="viewing-operator-logs">Viewing Operator Logs<a class="headerlink" href="#viewing-operator-logs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>plattr-operator<span class="w"> </span>-f<span class="w"> </span>--all-containers
+</code></pre></div>
+<h3 id="leader-election">Leader Election<a class="headerlink" href="#leader-election" title="Permanent link">&para;</a></h3>
+<p>For high-availability (multiple operator replicas), enable leader election:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">env</span><span class="p">:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LEADER_ELECTION</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LEASE_NAMESPACE</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">plattr-system</span>
+</code></pre></div>
+<p>The operator creates a <code>Lease</code> resource (<code>plattr-operator-leader</code>). Only the leader processes reconciliation events. Lease duration is 15 seconds with 5-second renewal intervals.</p>
+<h3 id="scaling-the-operator">Scaling the Operator<a class="headerlink" href="#scaling-the-operator" title="Permanent link">&para;</a></h3>
+<p>The operator runs as a single Deployment. With leader election enabled, you can run multiple replicas for failover:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>plattr-operator<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">2</span>
+</code></pre></div>
+<p>Only the leader processes events; standbys take over if the leader's lease expires.</p>
+<h2 id="crd-management">CRD Management<a class="headerlink" href="#crd-management" title="Permanent link">&para;</a></h2>
+<h3 id="installing-crds">Installing CRDs<a class="headerlink" href="#installing-crds" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>manifests/crds/application.yaml
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>manifests/crds/preview-environment.yaml
+</code></pre></div>
+<h3 id="verifying-crds">Verifying CRDs<a class="headerlink" href="#verifying-crds" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span>applications.platform.internal
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span>previewenvironments.platform.internal
+</code></pre></div>
+<h3 id="creating-an-application">Creating an Application<a class="headerlink" href="#creating-an-application" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">platform.internal/v1alpha1</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Application</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nt">metadata</span><span class="p">:</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-frontend</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nt">spec</span><span class="p">:</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="nt">repository</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github.com/myorg/my-frontend</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nextjs</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">  </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="nt">imageRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">123456789.dkr.ecr.us-east-1.amazonaws.com/plattr-apps:my-frontend-abc123</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span><span class="nt">database</span><span class="p">:</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="nt">buckets</span><span class="p">:</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uploads</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w">        </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="w">    </span><span class="nt">providers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">google</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">github</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">  </span><span class="nt">scaling</span><span class="p">:</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">    </span><span class="nt">min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">    </span><span class="nt">max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">    </span><span class="nt">targetCPU</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">70</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>my-app.yaml
+</code></pre></div>
+<h3 id="checking-application-status">Checking Application Status<a class="headerlink" href="#checking-application-status" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Summary</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>applications
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Detailed status</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>application<span class="w"> </span>my-frontend<span class="w"> </span>-o<span class="w"> </span>yaml
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Status conditions</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>application<span class="w"> </span>my-frontend<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.conditions}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool
+</code></pre></div>
+<p>Status phases: <code>Pending</code> → <code>Provisioning</code> → <code>Running</code> (or <code>Failed</code>)</p>
+<p>See the full <a href="../reference/crds/">CRD Reference</a>.</p>
+<h2 id="supporting-add-ons">Supporting Add-Ons<a class="headerlink" href="#supporting-add-ons" title="Permanent link">&para;</a></h2>
+<h3 id="cert-manager">cert-manager<a class="headerlink" href="#cert-manager" title="Permanent link">&para;</a></h3>
+<p>Provides automatic TLS certificates via Let's Encrypt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Verify cert-manager is running</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>cert-manager
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Check ClusterIssuer</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>clusterissuer<span class="w"> </span>letsencrypt-prod
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Debug certificate issues</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificates<span class="w"> </span>-A
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>certificate<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</code></pre></div>
+<h3 id="external-dns">external-dns<a class="headerlink" href="#external-dns" title="Permanent link">&para;</a></h3>
+<p>Automatically creates DNS records in Route 53 from Ingress resources.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Verify external-dns is running</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>external-dns
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Check logs for DNS sync</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>external-dns
+</code></pre></div>
+<h3 id="ingress-nginx">ingress-nginx<a class="headerlink" href="#ingress-nginx" title="Permanent link">&para;</a></h3>
+<p>Routes external traffic to services via an AWS Network Load Balancer.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Verify ingress controller</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>ingress-nginx
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Check NLB</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>-n<span class="w"> </span>ingress-nginx<span class="w"> </span>ingress-nginx-controller
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># List all Ingress resources</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>ingress<span class="w"> </span>-A
+</code></pre></div>
+<h3 id="keycloak">Keycloak<a class="headerlink" href="#keycloak" title="Permanent link">&para;</a></h3>
+<p>Managed authentication provider running on EKS.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Check Keycloak pods</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="c1"># Access admin console (port-forward)</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8443</span>:443
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="c1"># Open https://localhost:8443/admin</span>
+</code></pre></div>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="prometheus-metrics">Prometheus Metrics<a class="headerlink" href="#prometheus-metrics" title="Permanent link">&para;</a></h3>
+<p>The operator exposes Prometheus metrics on port 9090 (default Express server):</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>application_phase</code></td>
+<td>Gauge</td>
+<td>Current phase of each Application (labeled by name, namespace, phase)</td>
+</tr>
+<tr>
+<td><code>reconcile_total</code></td>
+<td>Counter</td>
+<td>Total reconciliation count (labeled by name, result: success/failure)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h3>
+<p>The operator exposes a health endpoint. Check it with:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>deploy/plattr-operator<span class="w"> </span>--<span class="w"> </span>curl<span class="w"> </span>-s<span class="w"> </span>localhost:9090/healthz
+</code></pre></div>
+<h3 id="resource-quotas">Resource Quotas<a class="headerlink" href="#resource-quotas" title="Permanent link">&para;</a></h3>
+<p>Each environment namespace has resource quotas (configured in CDK):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>resourcequota<span class="w"> </span>-n<span class="w"> </span>production
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>resourcequota<span class="w"> </span>-n<span class="w"> </span>staging
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>resourcequota<span class="w"> </span>-n<span class="w"> </span>uat
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="application-stuck-in-provisioning">Application Stuck in "Provisioning"<a class="headerlink" href="#application-stuck-in-provisioning" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Check operator logs for errors:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>plattr-operator<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Check Application conditions:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>application<span class="w"> </span>my-app<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.conditions}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool
+</code></pre></div></p>
+</li>
+<li>
+<p>Common causes:</p>
+</li>
+<li><strong>DatabaseReady: False</strong> — Aurora connectivity issue, check DB_ADMIN_URL or DB_SECRET_ARN</li>
+<li><strong>StorageReady: False</strong> — S3/IAM permissions issue, check operator IRSA role</li>
+<li><strong>AuthReady: False</strong> — Keycloak unreachable, check Keycloak pods</li>
+<li><strong>DeploymentReady: False</strong> — Pods failing to start, check <code>kubectl describe pod</code></li>
+</ol>
+<h3 id="application-stuck-in-failed">Application Stuck in "Failed"<a class="headerlink" href="#application-stuck-in-failed" title="Permanent link">&para;</a></h3>
+<p>The operator retries up to 3 times with exponential backoff (1s, 2s, 4s). If it fails:</p>
+<ol>
+<li>Fix the underlying issue</li>
+<li>Trigger re-reconciliation by touching the spec:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>application<span class="w"> </span>my-app<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;scaling&quot;:{&quot;min&quot;:2}}}&#39;</span>
+</code></pre></div></li>
+</ol>
+<h3 id="preview-environment-not-cleaning-up">Preview Environment Not Cleaning Up<a class="headerlink" href="#preview-environment-not-cleaning-up" title="Permanent link">&para;</a></h3>
+<p>The TTL controller runs every 5 minutes. Check:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># List previews with expiry</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>previewenvironments<span class="w"> </span>-o<span class="w"> </span>custom-columns<span class="o">=</span>NAME:.metadata.name,EXPIRES:.status.expiresAt
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Manually delete</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>previewenvironment<span class="w"> </span>my-app-pr-42
+</code></pre></div>
+<h3 id="postgrest-sidecar-not-working">PostgREST Sidecar Not Working<a class="headerlink" href="#postgrest-sidecar-not-working" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p>Check both containers in the pod:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>my-app
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>&lt;pod&gt;<span class="w"> </span>-c<span class="w"> </span>postgrest
+</code></pre></div></p>
+</li>
+<li>
+<p>Common issues:</p>
+</li>
+<li><strong>Connection refused</strong> — database schema or role doesn't exist yet (migration not run)</li>
+<li><strong>Empty response</strong> — no tables granted to the <code>_anon</code> role</li>
+<li><strong>Schema not found</strong> — schema name mismatch (check <code>PGRST_DB_SCHEMAS</code> env var)</li>
+</ol>
+<h3 id="database-connection-issues">Database Connection Issues<a class="headerlink" href="#database-connection-issues" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Check the DB secret exists</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>my-app-db<span class="w"> </span>-n<span class="w"> </span>production<span class="w"> </span>-o<span class="w"> </span>yaml
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># Test connectivity from a pod</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>kubectl<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>pg-test<span class="w"> </span>--image<span class="o">=</span>postgres:14<span class="w"> </span>--<span class="w"> </span>psql<span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>my-app-db<span class="w"> </span>-n<span class="w"> </span>production<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.DATABASE_URL}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
+<h3 id="operator-crash-loop">Operator Crash Loop<a class="headerlink" href="#operator-crash-loop" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Check events</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>events<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>--sort-by<span class="o">=</span><span class="s1">&#39;.lastTimestamp&#39;</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Check resource limits</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>plattr-operator
+</code></pre></div>
+<p>Common causes:
+- Missing IRSA role (check ServiceAccount annotation)
+- Invalid DB_SECRET_ARN
+- Kubernetes API permissions (check RBAC)</p>
+<h2 id="day-2-operations">Day-2 Operations<a class="headerlink" href="#day-2-operations" title="Permanent link">&para;</a></h2>
+<h3 id="upgrading-the-operator">Upgrading the Operator<a class="headerlink" href="#upgrading-the-operator" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Build and push new operator image to ECR</li>
+<li>Update the Helm values or CDK context with the new image tag</li>
+<li>Deploy:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrOperatorStack
+</code></pre></div>
+   Or update the Helm release directly:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>plattr-operator<span class="w"> </span>./chart<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>--set<span class="w"> </span>image.tag<span class="o">=</span>new-version
+</code></pre></div></li>
+</ol>
+<h3 id="upgrading-postgrest">Upgrading PostgREST<a class="headerlink" href="#upgrading-postgrest" title="Permanent link">&para;</a></h3>
+<p>The PostgREST version is pinned in the operator code (<code>postgrest/postgrest:v12.2.3</code>). To upgrade:</p>
+<ol>
+<li>Update the version in <code>packages/operator/src/reconcilers/workload.ts</code></li>
+<li>Rebuild and deploy the operator</li>
+<li>All apps will get the new PostgREST version on next reconciliation</li>
+</ol>
+<h3 id="database-backups">Database Backups<a class="headerlink" href="#database-backups" title="Permanent link">&para;</a></h3>
+<p>Aurora handles automated backups. For manual snapshots:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>aws<span class="w"> </span>rds<span class="w"> </span>create-db-cluster-snapshot<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">  </span>--db-cluster-identifier<span class="w"> </span>plattr-aurora<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">  </span>--db-cluster-snapshot-identifier<span class="w"> </span>manual-<span class="k">$(</span>date<span class="w"> </span>+%Y%m%d<span class="k">)</span>
+</code></pre></div>
+<h3 id="scaling-infrastructure">Scaling Infrastructure<a class="headerlink" href="#scaling-infrastructure" title="Permanent link">&para;</a></h3>
+<p><strong>More app replicas:</strong> Adjust <code>scaling.min</code> and <code>scaling.max</code> in the Application spec. HPA handles the rest.</p>
+<p><strong>More Aurora capacity:</strong> Scale through AWS console or CDK.</p>
+<p><strong>More Keycloak capacity:</strong> Scale the StatefulSet:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>kubectl<span class="w"> </span>scale<span class="w"> </span>statefulset<span class="w"> </span>keycloak<span class="w"> </span>-n<span class="w"> </span>plattr-system<span class="w"> </span>--replicas<span class="o">=</span><span class="m">3</span>
+</code></pre></div></p>
+<h3 id="adding-a-new-environment">Adding a New Environment<a class="headerlink" href="#adding-a-new-environment" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add the namespace in CDK (<code>PlattrOperatorStack</code>)</li>
+<li>Deploy: <code>npx cdk deploy PlattrOperatorStack</code></li>
+<li>Update the CLI's <code>resolveEnv()</code> function to map the new environment name to namespace</li>
+<li>Update CI/CD workflows to support the new environment</li>
+</ol>
+<h3 id="rotating-database-credentials">Rotating Database Credentials<a class="headerlink" href="#rotating-database-credentials" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Update the secret in AWS Secrets Manager</li>
+<li>Restart the operator to pick up new credentials:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment<span class="w"> </span>plattr-operator<span class="w"> </span>-n<span class="w"> </span>plattr-system
+</code></pre></div></li>
+<li>App-level credentials (per-schema roles) are generated by the operator and stored in Kubernetes Secrets. To rotate, delete the Secret and let the operator recreate it:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>my-app-db<span class="w"> </span>-n<span class="w"> </span>production
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="c1"># Operator will detect the missing Secret and recreate it with new credentials</span>
+</code></pre></div></li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["search.suggest", "search.highlight", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

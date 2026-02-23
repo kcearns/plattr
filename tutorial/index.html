@@ -1,0 +1,1433 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="An internal developer platform — Vercel-like experience on Kubernetes">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>End-to-End Tutorial - Plattr</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#end-to-end-tutorial" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Plattr" class="md-header__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Plattr
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              End-to-End Tutorial
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Plattr" class="md-nav__button md-logo" aria-label="Plattr" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Plattr
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/kevin/plattr" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    plattr
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../plattr-team-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plattr Team Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CRDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/plattr-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    plattr.yaml
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#part-1-platform-engineer-setting-up-the-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 1: Platform Engineer — Setting Up the Cluster
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 1: Platform Engineer — Setting Up the Cluster">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-dns-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 DNS Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-clone-and-install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Clone and Install
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-initialize-infrastructure-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Initialize Infrastructure Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-bootstrap-cdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Bootstrap CDK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-deploy-the-stacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.6 Deploy the Stacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-verify-the-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.7 Verify the Cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-tear-down-when-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.8 Tear Down (When Done)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#part-2-developer-building-and-deploying-a-nextjs-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 2: Developer — Building and Deploying a Next.js App
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Part 2: Developer — Building and Deploying a Next.js App">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-scaffold-the-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Scaffold the App
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-start-local-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Start Local Development
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-whats-running-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 What's Running Locally
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-use-the-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Use the Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-run-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 Run Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-full-local-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.7 Full Local Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#28-deploy-to-the-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.8 Deploy to the Cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29-verify-the-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.9 Verify the Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#210-preview-environments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.10 Preview Environments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#211-clean-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.11 Clean Up
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="end-to-end-tutorial">End-to-End Tutorial<a class="headerlink" href="#end-to-end-tutorial" title="Permanent link">&para;</a></h1>
+<p>This tutorial walks through a complete Plattr workflow from scratch. A platform engineer sets up a non-prod cluster on AWS, then a developer builds a Next.js app and deploys it.</p>
+<p><strong>Conventions used throughout:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Placeholder</th>
+<th>Example value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AWS Account ID</td>
+<td><code>111122223333</code></td>
+</tr>
+<tr>
+<td>AWS Region</td>
+<td><code>us-east-1</code></td>
+</tr>
+<tr>
+<td>Base domain</td>
+<td><code>platform.example.dev</code></td>
+</tr>
+<tr>
+<td>Route 53 Hosted Zone ID</td>
+<td><code>Z0EXAMPLE12345</code></td>
+</tr>
+<tr>
+<td>GitHub org</td>
+<td><code>acme-eng</code></td>
+</tr>
+<tr>
+<td>App name</td>
+<td><code>my-app</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="part-1-platform-engineer-setting-up-the-cluster">Part 1: Platform Engineer — Setting Up the Cluster<a class="headerlink" href="#part-1-platform-engineer-setting-up-the-cluster" title="Permanent link">&para;</a></h2>
+<h3 id="11-prerequisites">1.1 Prerequisites<a class="headerlink" href="#11-prerequisites" title="Permanent link">&para;</a></h3>
+<p>Install the following before proceeding:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js</td>
+<td>18+</td>
+<td>Runs CDK and CLI</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>Latest</td>
+<td>Container builds, Kind cluster</td>
+</tr>
+<tr>
+<td>AWS CLI</td>
+<td>v2</td>
+<td>AWS authentication</td>
+</tr>
+<tr>
+<td>AWS CDK</td>
+<td>v2</td>
+<td>Infrastructure deployment</td>
+</tr>
+<tr>
+<td>kubectl</td>
+<td>1.28+</td>
+<td>Kubernetes interaction</td>
+</tr>
+<tr>
+<td>Helm</td>
+<td>v3</td>
+<td>Chart installations</td>
+</tr>
+</tbody>
+</table>
+<p>Ensure your AWS CLI is configured with credentials that have administrator access:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1"># Should return your account ID (e.g. 111122223333)</span>
+</code></pre></div>
+<h3 id="12-dns-setup">1.2 DNS Setup<a class="headerlink" href="#12-dns-setup" title="Permanent link">&para;</a></h3>
+<p>Create a Route 53 hosted zone for your base domain. Apps will be accessible at <code>{appName}.{env}.{baseDomain}</code> (e.g. <code>my-app.staging.platform.example.dev</code>).</p>
+<ol>
+<li>In the AWS Console, go to <strong>Route 53 → Hosted zones → Create hosted zone</strong></li>
+<li>Enter your domain (e.g. <code>platform.example.dev</code>) and select <strong>Public hosted zone</strong></li>
+<li>Copy the NS records and add them to your domain registrar</li>
+<li>Note the <strong>Hosted Zone ID</strong> (e.g. <code>Z0EXAMPLE12345</code>) — you'll need it later</li>
+</ol>
+<p>Verify DNS delegation is working:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>dig<span class="w"> </span>NS<span class="w"> </span>platform.example.dev
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># Should return the Route 53 NS records</span>
+</code></pre></div>
+<h3 id="13-clone-and-install">1.3 Clone and Install<a class="headerlink" href="#13-clone-and-install" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/acme-eng/plattr.git
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>plattr
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npm<span class="w"> </span>install
+</code></pre></div>
+<h3 id="14-initialize-infrastructure-configuration">1.4 Initialize Infrastructure Configuration<a class="headerlink" href="#14-initialize-infrastructure-configuration" title="Permanent link">&para;</a></h3>
+<p>Run the interactive wizard to generate <code>packages/cdk/cdk.json</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>init
+</code></pre></div>
+<p>Walk through each prompt:</p>
+<p><strong>Environment type:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>? Environment type: Non-prod (staging/dev)
+</code></pre></div>
+<p>Choose <code>Non-prod (staging/dev)</code> — this creates staging and UAT environments on a single EKS cluster.</p>
+<p><strong>Common settings:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>? AWS Account ID?  111122223333
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>? AWS Region?      us-east-1
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>? Base domain?     platform.example.dev
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>? Route 53 Hosted Zone ID?  Z0EXAMPLE12345
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>? GitHub organization name?  acme-eng
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>? GitHub repo filter?  (press Enter to skip)
+</code></pre></div>
+<p>The GitHub org is used for OIDC federation — CI/CD workflows in repos under this org can authenticate to AWS without static credentials. The repo filter is optional; leave it blank to allow all repos in the org.</p>
+<p><strong>Add-ons:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>? Install cert-manager?    Yes
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>? Install external-dns?    Yes
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>? Install ingress-nginx?   Yes
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>? Install Keycloak?        Yes
+</code></pre></div>
+<p>All default to <code>Yes</code>. These provide TLS certificates (Let's Encrypt), automatic DNS records, an ingress controller, and authentication respectively.</p>
+<p><strong>Infrastructure mode:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>? Infrastructure mode: CDK-managed (new VPC + EKS + Aurora)
+</code></pre></div>
+<p>Choose <code>CDK-managed</code> to have CDK create the VPC, EKS cluster, and Aurora database for you. The <code>Existing infrastructure</code> option is for connecting to an EKS cluster you already have.</p>
+<p><strong>Cluster settings:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>? EKS cluster name?         plattr-nonprod
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>? Availability zones?       (press Enter for auto)
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>? Aurora min ACU?           0.5
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>? Aurora max ACU?           4
+</code></pre></div>
+<p>EKS Auto Mode handles compute automatically — no instance types or node counts to configure. For a tutorial or dev/test environment, Aurora Serverless at 0.5–4 ACUs keeps costs low.</p>
+<p>The wizard writes <code>packages/cdk/cdk.json</code> and prints next steps:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Wrote packages/cdk/cdk.json
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Next steps:
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  cd packages/cdk
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>  npm install
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  npx cdk bootstrap aws://111122223333/us-east-1
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  npx cdk deploy PlattrInfraStack PlattrOperatorStack PlattrCicdStack
+</code></pre></div>
+<h3 id="15-bootstrap-cdk">1.5 Bootstrap CDK<a class="headerlink" href="#15-bootstrap-cdk" title="Permanent link">&para;</a></h3>
+<p>CDK bootstrap creates a staging S3 bucket and IAM roles that CDK uses to deploy resources:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>packages/cdk
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap<span class="w"> </span>aws://111122223333/us-east-1
+</code></pre></div>
+<p>This only needs to run once per account/region combination.</p>
+<h3 id="16-deploy-the-stacks">1.6 Deploy the Stacks<a class="headerlink" href="#16-deploy-the-stacks" title="Permanent link">&para;</a></h3>
+<p>Deploy all three stacks:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>npx<span class="w"> </span>cdk<span class="w"> </span>deploy<span class="w"> </span>PlattrInfraStack<span class="w"> </span>PlattrOperatorStack<span class="w"> </span>PlattrCicdStack
+</code></pre></div>
+<p>CDK will show you the resources it plans to create and ask for confirmation. Type <code>y</code> to proceed.</p>
+<p><strong>What gets created (~30–45 minutes):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Stack</th>
+<th>What it creates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PlattrInfraStack</code></td>
+<td>VPC (public/private subnets, NAT gateway), EKS cluster (Kubernetes 1.33, Auto Mode), Aurora Serverless v2 (PostgreSQL 16.4)</td>
+</tr>
+<tr>
+<td><code>PlattrOperatorStack</code></td>
+<td><code>plattr-system</code> namespace, CRDs (<code>Application</code>, <code>PreviewEnvironment</code>), operator Helm release, ECR repo (<code>plattr-operator</code>), IRSA role, environment namespaces (<code>staging</code>, <code>uat</code>, <code>production</code>), cert-manager + Let's Encrypt, external-dns, ingress-nginx (AWS NLB), Keycloak</td>
+</tr>
+<tr>
+<td><code>PlattrCicdStack</code></td>
+<td>GitHub OIDC provider, ECR repo (<code>plattr-apps</code>), CI/CD deploy IAM roles</td>
+</tr>
+</tbody>
+</table>
+<h3 id="17-verify-the-cluster">1.7 Verify the Cluster<a class="headerlink" href="#17-verify-the-cluster" title="Permanent link">&para;</a></h3>
+<p>Update your kubeconfig to point at the new cluster:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>aws<span class="w"> </span>eks<span class="w"> </span>update-kubeconfig<span class="w"> </span>--name<span class="w"> </span>plattr-nonprod<span class="w"> </span>--region<span class="w"> </span>us-east-1
+</code></pre></div>
+<p>Check that nodes are ready:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1"># NAME                          STATUS   ROLES    AGE   VERSION</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1"># ip-10-0-1-xx.ec2.internal    Ready    &lt;none&gt;   10m   v1.33.x</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># ip-10-0-2-xx.ec2.internal    Ready    &lt;none&gt;   10m   v1.33.x</span>
+</code></pre></div>
+<p>Check the operator is running:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>plattr-system
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1"># NAME                               READY   STATUS    RESTARTS   AGE</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1"># plattr-operator-xxxxxxxxxx-xxxxx   1/1     Running   0          5m</span>
+</code></pre></div>
+<p>Check environment namespaces exist:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>ns<span class="w"> </span>staging<span class="w"> </span>uat<span class="w"> </span>production
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># NAME         STATUS   AGE</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="c1"># staging      Active   5m</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># uat          Active   5m</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="c1"># production   Active   5m</span>
+</code></pre></div>
+<p>Check add-ons:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>cert-manager
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>ingress-nginx
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>external-dns
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>keycloak
+</code></pre></div>
+<p>Your cluster is ready. Developers can now deploy apps to it.</p>
+<h3 id="18-tear-down-when-done">1.8 Tear Down (When Done)<a class="headerlink" href="#18-tear-down-when-done" title="Permanent link">&para;</a></h3>
+<p>To remove all AWS resources when you're finished with this tutorial:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nb">cd</span><span class="w"> </span>packages/cdk
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>destroy<span class="w"> </span>--all
+</code></pre></div>
+<p>This deletes the EKS cluster, VPC, Aurora database, and all associated resources. Aurora has a <code>RETAIN</code> removal policy, so the database cluster will be retained as a safety measure — delete it manually from the RDS console if you want a full cleanup.</p>
+<hr />
+<h2 id="part-2-developer-building-and-deploying-a-nextjs-app">Part 2: Developer — Building and Deploying a Next.js App<a class="headerlink" href="#part-2-developer-building-and-deploying-a-nextjs-app" title="Permanent link">&para;</a></h2>
+<h3 id="21-prerequisites">2.1 Prerequisites<a class="headerlink" href="#21-prerequisites" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Version</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js</td>
+<td>18+</td>
+<td>Runtime</td>
+</tr>
+<tr>
+<td>Docker</td>
+<td>Latest</td>
+<td>Container builds, local cluster</td>
+</tr>
+<tr>
+<td>Kind</td>
+<td>Latest</td>
+<td>Local Kubernetes</td>
+</tr>
+<tr>
+<td>kubectl</td>
+<td>1.28+</td>
+<td>Kubernetes interaction</td>
+</tr>
+<tr>
+<td>Dagger CLI</td>
+<td>Latest</td>
+<td>Build pipeline</td>
+</tr>
+<tr>
+<td>Plattr CLI</td>
+<td>Latest</td>
+<td><code>npm install -g @plattr/cli</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-scaffold-the-app">2.2 Scaffold the App<a class="headerlink" href="#22-scaffold-the-app" title="Permanent link">&para;</a></h3>
+<p>Create a new Next.js app and initialize Plattr:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>npx<span class="w"> </span>create-next-app@latest<span class="w"> </span>my-app
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nb">cd</span><span class="w"> </span>my-app
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>plattr<span class="w"> </span>init
+</code></pre></div>
+<p><code>plattr init</code> asks a series of questions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>? App name?        my-app
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>? Framework?       nextjs
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>? Enable database? Yes
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>? Enable storage?  Yes
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>? Enable auth?     Yes
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>? Enable Redis?    No
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>? Enable OpenSearch? No
+</code></pre></div>
+<p>This creates two files:</p>
+<ul>
+<li><strong><code>plattr.yaml</code></strong> — declares what your app needs:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-app</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nt">framework</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nextjs</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="nt">database</span><span class="p">:</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="nt">storage</span><span class="p">:</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="w">  </span><span class="nt">buckets</span><span class="p">:</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uploads</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="w">      </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="nt">auth</span><span class="p">:</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="w">  </span><span class="nt">providers</span><span class="p">:</span>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">google</span>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">github</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a><span class="nt">local</span><span class="p">:</span>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3000</span>
+</code></pre></div>
+<ul>
+<li><strong><code>.github/workflows/plattr-deploy.yml</code></strong> — CI/CD workflow for automatic deployment on push</li>
+</ul>
+<h3 id="23-start-local-development">2.3 Start Local Development<a class="headerlink" href="#23-start-local-development" title="Permanent link">&para;</a></h3>
+<p>Start the local infrastructure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>plattr<span class="w"> </span>dev
+</code></pre></div>
+<p>This creates a Kind cluster, starts containerized services, and writes connection details to <code>.plattr/my-app.env</code>.</p>
+<p>Source the environment variables and start your dev server:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nb">source</span><span class="w"> </span>.plattr/my-app.env
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>npx<span class="w"> </span>next<span class="w"> </span>dev
+</code></pre></div>
+<p>Your app is now running at <code>http://localhost:3000</code> with all backing services available.</p>
+<h3 id="24-whats-running-locally">2.4 What's Running Locally<a class="headerlink" href="#24-whats-running-locally" title="Permanent link">&para;</a></h3>
+<p><code>plattr dev</code> starts these services in the Kind cluster and port-forwards them:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Port</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PostgreSQL</td>
+<td>5432</td>
+<td>App database (schema: <code>staging_my_app</code>)</td>
+</tr>
+<tr>
+<td>PostgREST</td>
+<td>3001</td>
+<td>Auto-generated REST API over your database</td>
+</tr>
+<tr>
+<td>MinIO</td>
+<td>9000 (API), 9001 (Console)</td>
+<td>S3-compatible object storage</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>8080</td>
+<td>Authentication / identity provider</td>
+</tr>
+<tr>
+<td>Redis</td>
+<td>6379</td>
+<td>In-memory cache (if enabled)</td>
+</tr>
+<tr>
+<td>OpenSearch</td>
+<td>9200</td>
+<td>Search engine (if enabled)</td>
+</tr>
+<tr>
+<td>OpenSearch Dashboards</td>
+<td>5601</td>
+<td>Search UI (if enabled)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="25-use-the-database">2.5 Use the Database<a class="headerlink" href="#25-use-the-database" title="Permanent link">&para;</a></h3>
+<p>Connect to the local database:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>shell
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="c1"># Connects to PostgreSQL as the admin user</span>
+</code></pre></div>
+<p>Create a migration. For example, using Prisma:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>npx<span class="w"> </span>prisma<span class="w"> </span>init
+</code></pre></div>
+<p>Edit <code>prisma/schema.prisma</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>datasource db {
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>  provider = &quot;postgresql&quot;
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>  url      = env(&quot;DATABASE_URL&quot;)
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>}
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>generator client {
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>  provider = &quot;prisma-client-js&quot;
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>}
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a>model Task {
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a>  id        Int      @id @default(autoincrement())
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a>  title     String
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a>  done      Boolean  @default(false)
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>  createdAt DateTime @default(now())
+<a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a>}
+</code></pre></div>
+<p>Run the migration:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>plattr<span class="w"> </span>db<span class="w"> </span>migrate<span class="w"> </span>--engine<span class="w"> </span>prisma
+</code></pre></div>
+<p>The <code>Task</code> table is now available through PostgREST at <code>http://localhost:3001/task</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Create a task</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:3001/task<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;title&quot;: &quot;Try Plattr&quot;, &quot;done&quot;: false}&#39;</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="c1"># List tasks</span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>curl<span class="w"> </span>http://localhost:3001/task
+</code></pre></div>
+<p>In production, PostgREST runs as a sidecar container and is accessible at <code>/api/rest</code> on your app's domain.</p>
+<h3 id="26-run-tests">2.6 Run Tests<a class="headerlink" href="#26-run-tests" title="Permanent link">&para;</a></h3>
+<p>Plattr auto-detects your test runner (Vitest, Jest, RSpec, or Minitest):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>plattr<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>For CI-style ephemeral tests (runs in a Dagger container):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>plattr<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--ci
+</code></pre></div>
+<h3 id="27-full-local-pipeline">2.7 Full Local Pipeline<a class="headerlink" href="#27-full-local-pipeline" title="Permanent link">&para;</a></h3>
+<p>Build, scan, and deploy to your local Kind cluster:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<p>This runs through the full pipeline:</p>
+<ol>
+<li><strong>Test</strong> — runs your test suite</li>
+<li><strong>Build</strong> — creates a production container image</li>
+<li><strong>Push</strong> — pushes to the local Kind registry</li>
+<li><strong>Scan</strong> — runs Trivy vulnerability scan</li>
+<li><strong>Deploy</strong> — applies Kubernetes resources to the Kind cluster</li>
+</ol>
+<p>Skip steps with flags:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>plattr<span class="w"> </span>deploy<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--skip-tests<span class="w"> </span>--skip-scan
+</code></pre></div>
+<p>Once deployed, check your app's status:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>plattr<span class="w"> </span>status
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="c1"># Phase: Running</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="c1"># Conditions:</span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1">#   DatabaseReady:   True</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="c1">#   StorageReady:    True</span>
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="c1">#   AuthReady:       True</span>
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="c1">#   DeploymentReady: True</span>
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="c1">#   IngressReady:    True</span>
+</code></pre></div>
+<p>View logs (includes PostgREST sidecar output):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>plattr<span class="w"> </span>logs<span class="w"> </span>-f
+</code></pre></div>
+<p>To remove the local deployment:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>plattr<span class="w"> </span>undeploy<span class="w"> </span><span class="nb">local</span>
+</code></pre></div>
+<h3 id="28-deploy-to-the-cluster">2.8 Deploy to the Cluster<a class="headerlink" href="#28-deploy-to-the-cluster" title="Permanent link">&para;</a></h3>
+<p>With the CI/CD stack deployed (Part 1), pushing to GitHub triggers automatic deployment.</p>
+<p>Commit and push your app:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>git<span class="w"> </span>init
+<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>git<span class="w"> </span>add<span class="w"> </span>.
+<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Initial commit&quot;</span>
+<a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>origin<span class="w"> </span>https://github.com/acme-eng/my-app.git
+<a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>git<span class="w"> </span>push<span class="w"> </span>-u<span class="w"> </span>origin<span class="w"> </span>main
+</code></pre></div>
+<p>The <code>.github/workflows/plattr-deploy.yml</code> workflow runs automatically:</p>
+<ol>
+<li>Authenticates to AWS via GitHub OIDC (no static credentials)</li>
+<li>Builds a production container image</li>
+<li>Pushes to the <code>plattr-apps</code> ECR repository</li>
+<li>Runs Trivy security scan</li>
+<li>Applies the <code>Application</code> custom resource to the EKS cluster</li>
+<li>The operator reconciles: creates the database schema, S3 bucket, Keycloak client, Deployment, Service, and Ingress</li>
+</ol>
+<p>Deployments go to <strong>staging</strong> by default. Merges to <code>main</code> can be promoted to production.</p>
+<h3 id="29-verify-the-deployment">2.9 Verify the Deployment<a class="headerlink" href="#29-verify-the-deployment" title="Permanent link">&para;</a></h3>
+<p>Check the deployment status from the CLI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>plattr<span class="w"> </span>status<span class="w"> </span>--env<span class="w"> </span>staging
+</code></pre></div>
+<p>Or directly via kubectl:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>application<span class="w"> </span>my-app<span class="w"> </span>-n<span class="w"> </span>staging
+</code></pre></div>
+<p>Once all conditions are <code>True</code>, your app is live at:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>https://my-app.staging.platform.example.dev
+</code></pre></div>
+<p>The auto-generated REST API is available at:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>https://my-app.staging.platform.example.dev/api/rest
+</code></pre></div>
+<h3 id="210-preview-environments">2.10 Preview Environments<a class="headerlink" href="#210-preview-environments" title="Permanent link">&para;</a></h3>
+<p>When a pull request is opened, Plattr creates a preview environment automatically. You can also create one locally:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>start<span class="w"> </span>--pr<span class="w"> </span><span class="m">42</span>
+</code></pre></div>
+<p>Preview environments get their own:</p>
+<ul>
+<li>Database schema (<code>preview_my_app_pr_42</code>)</li>
+<li>S3 bucket prefix</li>
+<li>Keycloak client</li>
+<li>Ingress at <code>my-app-pr-42.staging.platform.example.dev</code></li>
+</ul>
+<p>List active previews:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>plattr<span class="w"> </span>preview<span class="w"> </span>list
+</code></pre></div>
+<p>Preview environments are cleaned up automatically after 72 hours of inactivity.</p>
+<h3 id="211-clean-up">2.11 Clean Up<a class="headerlink" href="#211-clean-up" title="Permanent link">&para;</a></h3>
+<p><strong>Local cleanup:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>plattr<span class="w"> </span>infra<span class="w"> </span>destroy
+</code></pre></div>
+<p>This deletes the Kind cluster and the local Docker registry.</p>
+<p><strong>AWS cleanup</strong> (from the Plattr repo):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="nb">cd</span><span class="w"> </span>packages/cdk
+<a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a>npx<span class="w"> </span>cdk<span class="w"> </span>destroy<span class="w"> </span>--all
+</code></pre></div>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Command</th>
+<th>Who</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initialize config</td>
+<td><code>plattr infra init</code></td>
+<td>Platform engineer</td>
+</tr>
+<tr>
+<td>Bootstrap CDK</td>
+<td><code>npx cdk bootstrap aws://ACCOUNT/REGION</code></td>
+<td>Platform engineer</td>
+</tr>
+<tr>
+<td>Deploy stacks</td>
+<td><code>npx cdk deploy PlattrInfraStack PlattrOperatorStack PlattrCicdStack</code></td>
+<td>Platform engineer</td>
+</tr>
+<tr>
+<td>Scaffold app</td>
+<td><code>npx create-next-app@latest my-app &amp;&amp; plattr init</code></td>
+<td>Developer</td>
+</tr>
+<tr>
+<td>Local dev</td>
+<td><code>plattr dev</code></td>
+<td>Developer</td>
+</tr>
+<tr>
+<td>Run tests</td>
+<td><code>plattr test</code></td>
+<td>Developer</td>
+</tr>
+<tr>
+<td>Local deploy</td>
+<td><code>plattr deploy local</code></td>
+<td>Developer</td>
+</tr>
+<tr>
+<td>Remote deploy</td>
+<td><code>git push</code> (triggers CI/CD)</td>
+<td>Developer</td>
+</tr>
+<tr>
+<td>Tear down</td>
+<td><code>npx cdk destroy --all</code></td>
+<td>Platform engineer</td>
+</tr>
+</tbody>
+</table>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../developer-guide/">Developer Guide</a> — detailed reference for all developer workflows</li>
+<li><a href="../plattr-team-guide/">Plattr Team Guide</a> — operating and troubleshooting the platform</li>
+<li><a href="../reference/cli/">CLI Reference</a> — complete command reference</li>
+<li><a href="../reference/plattr-yaml/">plattr.yaml Reference</a> — all configuration options</li>
+<li><a href="../reference/architecture/">Architecture Deep-Dive</a> — how Plattr works under the hood</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["search.suggest", "search.highlight", "navigation.sections", "navigation.expand", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
